@@ -3,14 +3,17 @@ version: '3.8'
 services:
   smart-court-ai:
     build: .
-    container_name: smart_court_ai
-    restart: always
+    container_name: smart-court-ai
     ports:
-      - "8502:8501"  # Map host port 8502 to container port 8501
+      - "8501:8501"
     volumes:
-      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml # Secrets
-      - ./chroma_db:/app/chroma_db # Vector DB Persistence
-      - ./chat_history.db:/app/chat_history.db # SQL DB Persistence
-      - ./knowledge_docs:/app/knowledge_docs # Docs Persistence
+      - ./chroma_db:/app/chroma_db # Persist Vector DB
+      - ./knowledge_docs:/app/knowledge_docs # Persist documents
+      - ./logs:/app/logs # Persist logs check
     environment:
-      - PYTHONUNBUFFERED=1
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_SELF_HOSTED_URL=${DEEPSEEK_SELF_HOSTED_URL:-http://3.235.65.4:11434/v1}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin1234}
+    restart: unless-stopped
