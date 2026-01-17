@@ -204,11 +204,13 @@ else:
         # Helper function for suggestion button clicks
         def on_suggestion_click(question):
             st.session_state['auto_run_prompt'] = question
+            st.session_state['processed_suggestion'] = True
         
         # Check for pending auto_run_prompt
         if 'auto_run_prompt' in st.session_state:
             prompt = st.session_state['auto_run_prompt']
             del st.session_state['auto_run_prompt']
+            st.session_state['processed_suggestion'] = True  # Mark as from suggestion
         
         
         # Display History
@@ -282,15 +284,21 @@ else:
         # Process Prompt
         if prompt:
             with chat_container:
-                # Check if this is a duplicate user message
+                # Check if this is a duplicate - but allow if triggered from suggestions
                 should_process = True
-                if st.session_state.messages:
+                is_from_suggestion = 'processed_suggestion' in st.session_state
+                
+                if st.session_state.messages and not is_from_suggestion:
                     # Find the last user message
                     for msg in reversed(st.session_state.messages):
                         if msg.get('role') == 'user':
                             if msg.get('content') == prompt:
                                 should_process = False
                             break
+                
+                # Clear the suggestion flag
+                if 'processed_suggestion' in st.session_state:
+                    del st.session_state['processed_suggestion']
                 
                 if should_process:
                      with st.chat_message("user", avatar="🧑‍💼"): 
