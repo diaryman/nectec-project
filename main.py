@@ -58,6 +58,11 @@ else:
         # --- Chat Specific Settings ---
         st.divider()
         
+    # Get username for use in main area
+    username = st.session_state.username
+
+    with st.sidebar:
+        
         # Settings Expander
         with st.expander("⚙️ ตั้งค่า", expanded=False):
             theme_choice = st.radio("ธีม", ["🌙 Modern Dark", "☀️ Official Light"], index=1, label_visibility="collapsed")

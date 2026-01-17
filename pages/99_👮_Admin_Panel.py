@@ -92,8 +92,9 @@ with tab1:
             success, msg = build_vector_db()
             
             if success:
-                status.update(label="✅ เสร็จสิ้น", state="complete", expanded=False)
-                st.success(msg)
+                st.cache_data.clear()
+                status.update(label="✅ เสร็จสิ้น (Cache Cleared)", state="complete", expanded=False)
+                st.success(f"{msg}")
             else:
                 status.update(label="❌ เกิดข้อผิดพลาด", state="error", expanded=False)
                 st.error(msg)
