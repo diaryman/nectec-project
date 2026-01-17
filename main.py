@@ -201,6 +201,11 @@ else:
         chat_container = st.container()
         prompt = None
         
+        # Helper function for suggestion button clicks
+        def on_suggestion_click(question):
+            st.session_state['auto_run_prompt'] = question
+        
+        # Check for pending auto_run_prompt
         if 'auto_run_prompt' in st.session_state:
             prompt = st.session_state['auto_run_prompt']
             del st.session_state['auto_run_prompt']
@@ -248,9 +253,13 @@ else:
                             st.caption("💡 คำถามที่เกี่ยวข้อง:")
                             s_cols = st.columns(len(res["suggestions"]))
                             for j, s_q in enumerate(res["suggestions"]):
-                                if s_cols[j].button(s_q, key=f"hist_sug_{i}_{j}", use_container_width=True):
-                                    st.session_state['auto_run_prompt'] = s_q
-                                    st.rerun()
+                                s_cols[j].button(
+                                    s_q, 
+                                    key=f"hist_sug_{i}_{j}", 
+                                    use_container_width=True,
+                                    on_click=on_suggestion_click,
+                                    args=(s_q,)
+                                )
 
         # Regenerate Button
         if len(st.session_state.messages) > 0:
@@ -334,9 +343,13 @@ else:
                                 st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
                                 cols_sug = st.columns(len(suggs))
                                 for j, s_q in enumerate(suggs):
-                                    if cols_sug[j].button(s_q, key=f"live_sug_{len(st.session_state.messages)}_{j}", use_container_width=True):
-                                        st.session_state['auto_run_prompt'] = s_q
-                                        st.rerun()
+                                    cols_sug[j].button(
+                                        s_q, 
+                                        key=f"live_sug_{len(st.session_state.messages)}_{j}", 
+                                        use_container_width=True,
+                                        on_click=on_suggestion_click,
+                                        args=(s_q,)
+                                    )
 
                             st.divider()
                             st.caption("ให้คะแนนคำตอบ:")
