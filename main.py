@@ -244,80 +244,80 @@ else:
                         render_user_message(prompt)
                      st.session_state.messages.append({"role": "user", "content": prompt})
 
-                with st.chat_message("assistant", avatar="⚖️"):
-                    ph = st.empty()
-                    ph.markdown(f"⏳ **{model_name}**: กำลังประมวลผล...")
+                     with st.chat_message("assistant", avatar="⚖️"):
+                        ph = st.empty()
+                        ph.markdown(f"⏳ **{model_name}**: กำลังประมวลผล...")
 
-                    status = st.status("🔍 กำลังค้นหาข้อมูล...", expanded=True)
-                    
-                    try:
-                        status.write("📚 Searching Knowledge Base...")
-                        ctx, cite = retrieve_context(prompt, kb_id)
+                        status = st.status("🔍 กำลังค้นหาข้อมูล...", expanded=True)
                         
-                        status.write("⚡ Generating Response...")
-                        status.update(label="✅ Verified", state="complete", expanded=False)
-                        
-                        # Streaming Response
-                        ph.empty()
-                        start_time = time.time()
-                        gen = call_model_generator(model_name, prompt, ctx, cite, temp_val)
-                        full_response = st.write_stream(gen)
-                        elapsed_time = time.time() - start_time
-                        
-                        # Calculate Cost & Build Response Object
-                        cost = calculate_cost(MODELS[model_name]["id"], f"{SYSTEM_PROMPT}\n\nContext:\n{ctx}\n\nUser Question: {prompt}", full_response)
-                        
-                        res = {
-                            "model": model_name,
-                            "answer": full_response,
-                            "citations": cite,
-                            "cost": cost,
-                            "time": elapsed_time,
-                            "config": MODELS[model_name]
-                        }
-                        
-                        # Debug: Check if citations exist
-                        print(f"DEBUG: Citations in response: {cite}")
-                        print(f"DEBUG: Number of citations: {len(cite) if cite else 0}")
-                        
-                        render_result_card(res, kb_name, show_answer=False) # Only show citations/metadata
-                        # render_copy_button(res['answer'], f"live_{len(st.session_state.messages)}") # Already shown by write_stream? No, copy button is separate
-                        
-                        # Smart Suggestions
-                        st.divider()
-                        st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
-                        suggs = generate_suggestions(ctx, prompt)
-                        cols_sug = st.columns(len(suggs))
-                        for i, s_q in enumerate(suggs):
-                            if cols_sug[i].button(s_q, key=f"sug_{len(st.session_state.messages)}_{i}", use_container_width=True):
-                                st.session_state['auto_run_prompt'] = s_q
-                                st.rerun()
-
-                        st.divider()
-                        st.caption("ให้คะแนนคำตอบ:")
-                        st.feedback("stars", key=f"live_fb_{len(st.session_state.messages)}", on_change=handle_feedback, args=(f"live_fb_{len(st.session_state.messages)}", username, prompt, res['model'], res['answer']))
-                        
-                        # Save to State
-                        st.session_state.messages.append({
-                            "role": "assistant", 
-                            "response": res, 
-                            "kb_name": kb_name
-                        })
-                        
-                        # Save to DB
-                        if username: 
-                            save_chat_log_db(
-                                username=username,
-                                question=prompt,
-                                answer=res['answer'],
-                                model=res['model'],
-                                kb_name=kb_name,
-                                cost=float(res['cost'])
-                            )
+                        try:
+                            status.write("📚 Searching Knowledge Base...")
+                            ctx, cite = retrieve_context(prompt, kb_id)
                             
-                    except Exception as e:
-                        status.update(label="❌ Error", state="error")
-                        st.error(f"Error: {e}")
+                            status.write("⚡ Generating Response...")
+                            status.update(label="✅ Verified", state="complete", expanded=False)
+                            
+                            # Streaming Response
+                            ph.empty()
+                            start_time = time.time()
+                            gen = call_model_generator(model_name, prompt, ctx, cite, temp_val)
+                            full_response = st.write_stream(gen)
+                            elapsed_time = time.time() - start_time
+                            
+                            # Calculate Cost & Build Response Object
+                            cost = calculate_cost(MODELS[model_name]["id"], f"{SYSTEM_PROMPT}\n\nContext:\n{ctx}\n\nUser Question: {prompt}", full_response)
+                            
+                            res = {
+                                "model": model_name,
+                                "answer": full_response,
+                                "citations": cite,
+                                "cost": cost,
+                                "time": elapsed_time,
+                                "config": MODELS[model_name]
+                            }
+                            
+                            # Debug: Check if citations exist
+                            print(f"DEBUG: Citations in response: {cite}")
+                            print(f"DEBUG: Number of citations: {len(cite) if cite else 0}")
+                            
+                            render_result_card(res, kb_name, show_answer=False) # Only show citations/metadata
+                            # render_copy_button(res['answer'], f"live_{len(st.session_state.messages)}") # Already shown by write_stream? No, copy button is separate
+                            
+                            # Smart Suggestions
+                            st.divider()
+                            st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
+                            suggs = generate_suggestions(ctx, prompt)
+                            cols_sug = st.columns(len(suggs))
+                            for i, s_q in enumerate(suggs):
+                                if cols_sug[i].button(s_q, key=f"sug_{len(st.session_state.messages)}_{i}", use_container_width=True):
+                                    st.session_state['auto_run_prompt'] = s_q
+                                    st.rerun()
+
+                            st.divider()
+                            st.caption("ให้คะแนนคำตอบ:")
+                            st.feedback("stars", key=f"live_fb_{len(st.session_state.messages)}", on_change=handle_feedback, args=(f"live_fb_{len(st.session_state.messages)}", username, prompt, res['model'], res['answer']))
+                            
+                            # Save to State
+                            st.session_state.messages.append({
+                                "role": "assistant", 
+                                "response": res, 
+                                "kb_name": kb_name
+                            })
+                            
+                            # Save to DB
+                            if username: 
+                                save_chat_log_db(
+                                    username=username,
+                                    question=prompt,
+                                    answer=res['answer'],
+                                    model=res['model'],
+                                    kb_name=kb_name,
+                                    cost=float(res['cost'])
+                                )
+                                
+                        except Exception as e:
+                            status.update(label="❌ Error", state="error")
+                            st.error(f"Error: {e}")
 
     # --- Tab 2: History ---
     with tab_hist:
