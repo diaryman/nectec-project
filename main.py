@@ -229,7 +229,17 @@ else:
         # Process Prompt
         if prompt:
             with chat_container:
-                if not st.session_state.messages or st.session_state.messages[-1].get('content') != prompt:
+                # Check if this is a duplicate user message
+                should_process = True
+                if st.session_state.messages:
+                    # Find the last user message
+                    for msg in reversed(st.session_state.messages):
+                        if msg.get('role') == 'user':
+                            if msg.get('content') == prompt:
+                                should_process = False
+                            break
+                
+                if should_process:
                      with st.chat_message("user", avatar="🧑‍💼"): 
                         render_user_message(prompt)
                      st.session_state.messages.append({"role": "user", "content": prompt})
