@@ -1,11 +1,14 @@
 import streamlit as st
-from src.ui import load_custom_css, render_header
+from src.ui import load_custom_css, render_header, render_sidebar_menu
 from src.utils import check_session_timeout
 
 st.set_page_config(page_title="FAQ - Smart Court AI", page_icon="❓", layout="wide")
 
 # Check session timeout
 check_session_timeout()
+
+# Render Sidebar
+render_sidebar_menu()
 
 # Force light theme for better readability
 st.markdown("""

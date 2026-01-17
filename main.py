@@ -3,7 +3,7 @@ import pandas as pd
 import time
 from src.config import MODELS, KNOWLEDGE_BASES, SYSTEM_PROMPT
 from src.utils import check_secrets, check_session_timeout
-from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button
+from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button, render_sidebar_menu
 from src.services import retrieve_context, call_model_generator, generate_suggestions, calculate_cost, save_feedback, get_aws_agent
 from src.database import init_db, save_chat_log_db, get_chat_history_db
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
@@ -94,23 +94,11 @@ else:
     # 🏗️ SIDEBAR (Logged In)
     # ==========================================
     with st.sidebar:
-        # Brand Header
-        st.markdown("""
-            <div style="text-align: center; margin-bottom: 25px;">
-                <div style="font-size: 60px; margin-bottom: 5px;">🤖</div>
-                <h3 style="margin: 0; font-weight: 700;">AI Assistant</h3>
-                <p style="opacity: 0.7; font-size: 0.85rem; margin-top: 5px;">ศาลปกครอง</p>
-            </div>
-        """, unsafe_allow_html=True)
+        # Render Global Sidebar (Menu & Profile)
+        render_sidebar_menu()
         
-        # User Info Card
-        username = st.session_state.username
-        st.markdown(f"""
-            <div style="background: rgba(100, 126, 234, 0.1); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; border-left: 3px solid #667eea;">
-                <div style="font-size: 0.85rem; opacity: 0.7;">👤 ผู้ใช้งาน:</div>
-                <div style="font-weight: 600; font-size: 1.1rem;">{username}</div>
-            </div>
-        """, unsafe_allow_html=True)
+        # --- Chat Specific Settings ---
+        st.divider()
         
         # Settings Expander
         with st.expander("⚙️ ตั้งค่า", expanded=False):

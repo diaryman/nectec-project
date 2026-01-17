@@ -335,3 +335,57 @@ def render_result_card(res_data, kb_name, show_answer=True):
                     <i>"{snippet}"</i>
                 </div>
                 """, unsafe_allow_html=True)
+
+def render_sidebar_menu():
+    """
+    Renders the custom sidebar navigation menu with icons and modern styling.
+    Replaces the default Streamlit sidebar navigation.
+    """
+    # 1. Hide default sidebar navigation
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarNav"] { display: none; }
+            
+            /* Custom Sidebar Link Styling */
+            .stPageLink a {
+                border-radius: 10px !important;
+                margin-bottom: 5px;
+                transition: all 0.3s ease;
+                border: 1px solid transparent;
+            }
+            .stPageLink a:hover {
+                background: rgba(102, 126, 234, 0.1);
+                border: 1px solid rgba(102, 126, 234, 0.2);
+                transform: translateX(5px);
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    with st.sidebar:
+        # Brand Header (Simplified for sidebar if needed, but main header is usually enough)
+        # st.image("logo.png", width=50) # If you have a logo
+        
+        # --- User Profile Section ---
+        if "username" in st.session_state and st.session_state.username:
+            with st.container(border=True):
+                c1, c2 = st.columns([1, 4])
+                with c1:
+                    st.markdown("<div style='font-size:30px; text-align:center;'>🧑‍💼</div>", unsafe_allow_html=True)
+                with c2:
+                    st.caption("เข้าใช้งานโดย")
+                    st.markdown(f"**{st.session_state.username}**")
+        
+        st.divider()
+        
+        # --- Navigation Menu ---
+        st.markdown("<div style='color: gray; font-size: 0.8rem; margin-bottom: 10px; font-weight: 600;'>เมนูหลัก (MENU)</div>", unsafe_allow_html=True)
+        
+        st.page_link("main.py", label="หน้าหลัก (Chat)", icon="💬")
+        st.page_link("pages/02_❓_FAQ.py", label="คำถามที่พบบ่อย (FAQ)", icon="❓")
+        
+        st.divider()
+        
+        # --- Admin & Settings ---
+        st.markdown("<div style='color: gray; font-size: 0.8rem; margin-bottom: 10px; font-weight: 600;'>การจัดการ (SYSTEM)</div>", unsafe_allow_html=True)
+        
+        st.page_link("pages/99_👮_Admin_Panel.py", label="ผู้ดูแลระบบ (Admin)", icon="👮")

@@ -10,11 +10,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.utils import check_admin_password, check_session_timeout, secure_filename
 from src.ingest import build_vector_db
 from src.vector_db import LocalKnowledgeBase
+from src.ui import render_sidebar_menu
 
 st.set_page_config(page_title="Admin Panel", page_icon="👮")
 
 # Check Timeout
 check_session_timeout()
+
+# Render Sidebar
+render_sidebar_menu()
 
 # 1. Authentication
 if not check_admin_password():
