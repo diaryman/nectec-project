@@ -8,6 +8,7 @@ import os
 REGION = "us-east-1"
 SHEET_NAME = "Court_AI_Logs"
 THB_RATE = 35.0
+DEEPSEEK_SELF_HOSTED_URL = os.getenv("DEEPSEEK_SELF_HOSTED_URL", "http://3.235.65.4:11434/v1")
 
 # ---------------------------------------------------------
 # 📚 KNOWLEDGE BASE CONFIG (เปลี่ยนชื่อเป็น "คลังข้อมูล")

@@ -8,7 +8,7 @@ from openai import OpenAI
 
 import streamlit as st
 
-from src.config import REGION, MODELS, SYSTEM_PROMPT, THB_RATE, MODEL_PRICING
+from src.config import REGION, MODELS, SYSTEM_PROMPT, THB_RATE, MODEL_PRICING, DEEPSEEK_SELF_HOSTED_URL, KNOWLEDGE_BASES
 from src.utils import load_secret
 from src.database import save_chat_log_db, get_chat_history_db, update_feedback_db
 
@@ -56,6 +56,7 @@ from src.vector_db import LocalKnowledgeBase
 # Initialize Local KB (Lazy Loading or Global)
 local_kb = LocalKnowledgeBase()
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def retrieve_context(query, kb_id):
     """Retrieves relevant context from AWS Bedrock or Local ChromaDB."""
     if not kb_id: 
@@ -163,7 +164,7 @@ def call_model_generator(model_name, prompt, context, citations_dict, temperatur
                 client = get_deepseek_client()
             else:
                 # Hardcoded IP needs to be verified or moved to config if dynamic
-                client = OpenAI(base_url="http://3.235.65.4:11434/v1", api_key="ollama", timeout=120.0)
+                client = OpenAI(base_url=DEEPSEEK_SELF_HOSTED_URL, api_key="ollama", timeout=120.0)
             
             if not client: 
                 yield "⚠️ Client not initialized"

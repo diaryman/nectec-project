@@ -35,25 +35,26 @@ def check_session_timeout(timeout_secs=1800):
 
 def load_secret(key_name: str, default: str = "") -> str:
     """
-    Load a secret from Streamlit secrets or environment variables.
+    Load a secret from environment variables or Streamlit secrets.
+    Prioritizes environment variables for security and production readiness.
     
     Args:
-        key_name (str): The key to look for in secrets.
+        key_name (str): The key to look for.
         default (str): Default value if not found.
         
     Returns:
         str: The secret value.
     """
-    # 1. Try streamlit secrets
+    # 1. Try environment variables first (More secure/Production friendly)
+    env_val = os.getenv(key_name)
+    if env_val:
+        return env_val
+
+    # 2. Try streamlit secrets
     try:
         return st.secrets[key_name]
     except (FileNotFoundError, KeyError):
         pass
-        
-    # 2. Try environment variables
-    env_val = os.getenv(key_name)
-    if env_val:
-        return env_val
         
     # 3. Return default
     return default
