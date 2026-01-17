@@ -227,7 +227,7 @@ def load_custom_css(theme_mode="Modern Dark"):
 def render_header():
     st.markdown("""
         <div class="court-header">
-            <div class="court-icon">⚖️</div>
+            <div class="court-icon">🤖</div>
             <h2>Smart Court AI Assistant</h2>
             <p>(ระบบทดสอบ) ผู้ช่วยอัจฉริยะศาลปกครอง ถาม - ตอบ ข้อมูลทั่วไปเกี่ยวกับคดีปกครอง ด้วย AI</p>
         </div>

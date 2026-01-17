@@ -9,7 +9,7 @@ from src.database import init_db, save_chat_log_db, get_chat_history_db
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
 # 1. Setup Page
-st.set_page_config(page_title="Smart Court AI", page_icon="⚖️", layout="wide")
+st.set_page_config(page_title="Smart Court AI Assistant", page_icon="🤖", layout="wide")
 
 # Check Timeout
 check_session_timeout()
@@ -44,7 +44,7 @@ if 'username_confirmed' not in st.session_state or not st.session_state.username
     
     _, c2, _ = st.columns([1, 2, 1])
     with c2:
-        st.markdown("<div style='text-align: center; font-size: 80px;'>⚖️</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; font-size: 80px;'>🤖</div>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align: center;'>Smart Court AI</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; margin-bottom: 30px;'>ระบบผู้ช่วยอัจฉริยะศาลปกครอง</p>", unsafe_allow_html=True)
         
@@ -68,8 +68,8 @@ else:
     # 🏗️ SIDEBAR (Logged In)
     # ==========================================
     with st.sidebar:
-        st.markdown("""<div style="text-align: center; margin-bottom: 20px;"><div class="court-icon">⚖️</div></div>""", unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center;'>Smart Court AI</h3>", unsafe_allow_html=True)
+        st.markdown("""<div style="text-align: center; margin-bottom: 20px;"><div class="court-icon">🤖</div></div>""", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>AI Assistant</h3>", unsafe_allow_html=True)
         st.markdown("---")
         
         with st.expander("⚙️ ตั้งค่า (Settings)", expanded=True):
