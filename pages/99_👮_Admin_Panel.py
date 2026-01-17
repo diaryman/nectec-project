@@ -7,7 +7,7 @@ import shutil
 # Fix import path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.utils import check_admin_password, check_session_timeout
+from src.utils import check_admin_password, check_session_timeout, secure_filename
 from src.ingest import build_vector_db
 from src.vector_db import LocalKnowledgeBase
 
@@ -42,10 +42,11 @@ with tab1:
     
     if uploaded_files:
         for uploaded_file in uploaded_files:
-            file_path = os.path.join(DOCS_DIR, uploaded_file.name)
+            safe_name = secure_filename(uploaded_file.name)
+            file_path = os.path.join(DOCS_DIR, safe_name)
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
-            st.toast(f"✅ Uploaded: {uploaded_file.name}")
+            st.toast(f"✅ Uploaded: {safe_name}")
         st.rerun()
 
     st.markdown("---")
@@ -108,7 +109,7 @@ with tab2:
     # Check Secrets
     try:
         secrets = st.secrets
-        keys_to_check = ["AWS_ACCESS_KEY", "AWS_SECRET_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY", "ADMIN_PASSWORD"]
+        keys_to_check = ["AWS_ACCESS_KEY", "AWS_SECRET_KEY", "DEEPSEEK_API_KEY", "ADMIN_PASSWORD"]
         
         for k in keys_to_check:
             val = secrets.get(k)

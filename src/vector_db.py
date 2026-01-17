@@ -4,6 +4,20 @@ from sentence_transformers import SentenceTransformer
 import os
 import streamlit as st
 
+import torch
+
+@st.cache_resource
+def load_embedding_model():
+    # Detect device: MPS (Mac) > CUDA (NVIDIA) > CPU
+    device = "cpu"
+    if torch.backends.mps.is_available():
+        device = "mps"
+    elif torch.cuda.is_available():
+        device = "cuda"
+        
+    print(f"🚀 Loading Embedding Model on: {device.upper()}")
+    return SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2', device=device)
+
 class LocalKnowledgeBase:
     def __init__(self, persist_directory="./chroma_db", collection_name="local_kb"):
         """
@@ -15,7 +29,7 @@ class LocalKnowledgeBase:
         # Initialize Embedding Model
         # using a lightweight model good for multilingual (Thai/English)
         try:
-            self.model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+            self.model = load_embedding_model()
         except Exception as e:
             st.error(f"Error loading embedding model: {e}")
             self.model = None

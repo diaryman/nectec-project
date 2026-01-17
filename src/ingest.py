@@ -53,14 +53,75 @@ def load_excel(path):
         print(f"Error reading Excel {path}: {e}")
         return ""
 
+class SimpleRecursiveSplitter:
+    def __init__(self, chunk_size=500, chunk_overlap=50, separators=None):
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.separators = separators or ["\n\n", "\n", " ", ""]
+
+    def split_text(self, text):
+        return self._split_text(text, self.separators)
+
+    def _split_text(self, text, separators):
+        final_chunks = []
+        separator = separators[-1]
+        new_separators = []
+        
+        # Find the best separator
+        for i, sep in enumerate(separators):
+            if sep == "":
+                separator = ""
+                break
+            if sep in text:
+                separator = sep
+                new_separators = separators[i + 1:]
+                break
+
+        # Split text
+        splits = text.split(separator) if separator else list(text)
+        
+        # Merge splits
+        good_splits = []
+        for s in splits:
+            if s.strip() or separator == "": # Keep non-empty
+               good_splits.append(s)
+        
+        # Recombine
+        current_doc = []
+        total = 0
+        for d in good_splits:
+            len_d = len(d) + (len(separator) if len(current_doc) > 0 else 0)
+            if total + len_d > self.chunk_size:
+                if total > self.chunk_size:
+                    # Recursive call if single split is too big
+                    if new_separators:
+                        sub_chunks = self._split_text(d, new_separators)
+                        final_chunks.extend(sub_chunks)
+                    else:
+                        final_chunks.append(d) # Forced append
+                else:
+                    doc_text = separator.join(current_doc)
+                    final_chunks.append(doc_text)
+                    
+                    # Overlap logic (simple)
+                    while total > self.chunk_overlap:
+                        total -= (len(current_doc[0]) + len(separator))
+                        current_doc.pop(0)
+                        
+                    current_doc.append(d)
+                    total += len_d
+            else:
+                current_doc.append(d)
+                total += len_d
+        
+        if current_doc:
+            final_chunks.append(separator.join(current_doc))
+            
+        return final_chunks
+
 def chunk_text(text, chunk_size=500, overlap=50):
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start = end - overlap
-    return chunks
+    splitter = SimpleRecursiveSplitter(chunk_size=chunk_size, chunk_overlap=overlap)
+    return splitter.split_text(text)
 
 def build_vector_db(doc_dir="knowledge_docs", persist_dir="./chroma_db"):
     """

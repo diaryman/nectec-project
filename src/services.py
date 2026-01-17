@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import os
 from openai import OpenAI
-import google.generativeai as genai
+
 import streamlit as st
 
 from src.config import REGION, MODELS, SYSTEM_PROMPT, THB_RATE, MODEL_PRICING
@@ -16,10 +16,7 @@ from src.database import save_chat_log_db, get_chat_history_db, update_feedback_
 AWS_ACCESS_KEY = load_secret("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = load_secret("AWS_SECRET_KEY")
 DEEPSEEK_API_KEY = load_secret("DEEPSEEK_API_KEY")
-GEMINI_API_KEY = load_secret("GEMINI_API_KEY")
 
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
 
 # ==========================================
 # 🔌 CLIENT FACTORIES
@@ -197,21 +194,7 @@ def call_single_model(model_name, prompt, context, citations_dict, temperature=0
                 )
                 answer = res.choices[0].message.content
 
-        # --- GEMINI ---
-        elif cfg["type"] == "gemini":
-            if not GEMINI_API_KEY: raise ValueError("Gemini Key missing")
-            gen_cfg = genai.GenerationConfig(temperature=temperature)
-            model = genai.GenerativeModel(cfg["id"])
-            
-            if placeholder:
-                response = model.generate_content(full_input, generation_config=gen_cfg, stream=True)
-                for chunk in response:
-                    answer += chunk.text
-                    placeholder.markdown(answer + "▌")
-                placeholder.markdown(answer)
-            else:
-                answer = model.generate_content(full_input, generation_config=gen_cfg).text
-            
+
     except Exception as e:
         answer = f"⚠️ Error: {str(e)}"
         if placeholder: placeholder.error(answer)
@@ -227,36 +210,9 @@ def call_single_model(model_name, prompt, context, citations_dict, temperature=0
         "time": elapsed
     }
 
-def save_to_sheet(username, q, r_left, kb_left=""):
-    """
-    Deprecated: Now saves to SQLite DB. 
-    Kept args for compatibility but uses internal DB function.
-    """
-    save_chat_log_db(
-        username=username,
-        question=q,
-        answer=r_left['answer'],
-        model=r_left['model'],
-        kb_name=kb_left,
-        cost=float(r_left['cost'])
-    )
+
 
 def save_feedback(username, prompt, model, score, answer_text=""):
     update_feedback_db(username, prompt, answer_text, score)
 
-def load_history_from_sheet(target_username):
-    """
-    Loads history from SQLite DB and converts to DataFrame for compatibility.
-    """
-    data = get_chat_history_db(target_username)
-    if not data:
-        return pd.DataFrame()
-    
-    # Convert list of dicts to DataFrame
-    df = pd.DataFrame(data)
-    
-    # Rename columns to match what UI expects roughly if needed, 
-    # but the new UI code in implementation plan might need adjustment or 
-    # we just map the DB columns directly.
-    # The UI expects indices currently, let's map them or return as is and update UI.
-    return df
+

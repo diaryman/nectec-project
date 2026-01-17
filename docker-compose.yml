@@ -8,7 +8,9 @@ services:
     ports:
       - "8502:8501"  # Map host port 8502 to container port 8501
     volumes:
-      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml # Mount secrets
-      - ./credentials.json:/app/credentials.json # Mount Google Sheet Creds
+      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml # Secrets
+      - ./chroma_db:/app/chroma_db # Vector DB Persistence
+      - ./chat_history.db:/app/chat_history.db # SQL DB Persistence
+      - ./knowledge_docs:/app/knowledge_docs # Docs Persistence
     environment:
       - PYTHONUNBUFFERED=1

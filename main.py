@@ -3,8 +3,8 @@ import pandas as pd
 from src.config import MODELS, KNOWLEDGE_BASES
 from src.utils import check_secrets, check_session_timeout
 from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button
-from src.services import retrieve_context, call_single_model, save_to_sheet, load_history_from_sheet, save_feedback, get_aws_agent
-from src.database import init_db
+from src.services import retrieve_context, call_single_model, save_feedback, get_aws_agent
+from src.database import init_db, save_chat_log_db, get_chat_history_db
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
 # 1. Setup Page
@@ -207,7 +207,14 @@ else:
                         
                         # Save to DB
                         if username: 
-                            save_to_sheet(username, prompt, res, kb_name)
+                            save_chat_log_db(
+                                username=username,
+                                question=prompt,
+                                answer=res['answer'],
+                                model=res['model'],
+                                kb_name=kb_name,
+                                cost=float(res['cost'])
+                            )
                             
                     except Exception as e:
                         status.update(label="❌ Error", state="error")
@@ -220,7 +227,8 @@ else:
             st.cache_data.clear()
             st.rerun()
             
-        df = load_history_from_sheet(username)
+        history_data = get_chat_history_db(username)
+        df = pd.DataFrame(history_data) if history_data else pd.DataFrame()
         if not df.empty:
             search_query = st.text_input("🔍 ค้นหาประวัติ", "").lower()
             

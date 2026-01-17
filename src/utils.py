@@ -84,3 +84,22 @@ def check_admin_password():
             st.error("❌ Incorrect password")
             
     return False
+
+import re
+
+def secure_filename(filename: str) -> str:
+    """
+    Sanitizes a filename to prevent path traversal and invalid characters.
+    """
+    # 1. Base name only (strips path)
+    filename = os.path.basename(filename)
+    
+    # 2. Keep only alphanumeric, dots, underscores, dashes, and Thai characters (Unicode ranges)
+    # \u0E00-\u0E7F is Thai range.
+    filename = re.sub(r'[^a-zA-Z0-9.\-_\u0E00-\u0E7F]', '_', filename)
+    
+    # 3. Prevent empty filenames
+    if not filename:
+        filename = "uploaded_file"
+        
+    return filename

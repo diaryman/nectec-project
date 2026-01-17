@@ -61,8 +61,7 @@ touch .streamlit/secrets.toml    # หรือสร้างไฟล์ด้
 AWS_ACCESS_KEY = "YOUR_AWS_ACCESS_KEY"
 AWS_SECRET_KEY = "YOUR_AWS_SECRET_KEY"
 
-# Google Gemini API (สำหรับ Gemini Pro/Flash)
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+
 
 # DeepSeek API (สำหรับ DeepSeek V3)
 DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY"
