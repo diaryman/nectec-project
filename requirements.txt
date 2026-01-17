@@ -1,0 +1,15 @@
+streamlit
+boto3
+openai
+google-generativeai
+gspread
+oauth2client
+pandas
+chromadb
+sentence-transformers
+pypdf
+python-docx
+reportlab
+pydantic-settings
+pydantic<2.0.0
+openpyxl

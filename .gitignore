@@ -1,0 +1,20 @@
+# Secrets
+.streamlit/secrets.toml
+credentials.json
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+nohup.out
+
+# Databases
+chat_history.db
+chroma_db/
+knowledge_docs/
