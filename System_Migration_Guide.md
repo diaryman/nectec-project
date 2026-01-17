@@ -9,23 +9,36 @@
 ปัจจุบันระบบรองรับ **AWS Bedrock** (Claude 3.5 Sonnet) และ **DeepSeek** หากต้องการเปลี่ยนรุ่นหรือผู้ให้บริการ:
 
 ### 1.1 เปลี่ยนรุ่นโมเดล AWS Bedrock
-1.  เปิดไฟล์ `src/services.py`
-2.  ค้นหาฟังก์ชัน `get_aws_agent` หรือ `call_single_model`
-3.  แก้ไข `modelId`:
+1.  เปิดไฟล์ `src/config.py` (ย้ายมาจาก `services.py` แล้ว)
+2.  แก้ไข `MODELS` dictionary:
     ```python
-    # ตัวอย่างการเปลี่ยนเป็น Claude 3 Haiku
-    modelId="anthropic.claude-3-haiku-20240307-v1:0" 
+    "Claude 3 Opus": {
+        "type": "bedrock",
+        "id": "anthropic.claude-3-opus-20240229-v1:0",
+        "icon": "🧠",
+        "color": "#000000"
+    }
     ```
 
-### 1.2 เพิ่มโมเดลใหม่ (เช่น OpenAI GPT-4)
-1.  เปิดไฟล์ `requirements.txt` และเพิ่ม `openai` (ถ้ายังไม่มี)
-2.  เปิดไฟล์ `.streamlit/secrets.toml` และเพิ่ม Key:
+### 1.2 การตั้งค่า DeepSeek (Self-Hosted/Local)
+ระบบรองรับการเชื่อมต่อกับ DeepSeek ผ่าน OpenAI API Compatible interface (เช่น Ollama หรือ vLLM)
+1.  ตั้งค่า Environment Variable:
+    ```bash
+    export DEEPSEEK_SELF_HOSTED_URL="http://your-server-ip:11434/v1"
+    ```
+2.  หรือแก้ไขไฟล์ `.streamlit/secrets.toml`:
+    ```toml
+    DEEPSEEK_SELF_HOSTED_URL = "http://your-server-ip:11434/v1"
+    ```
+
+### 1.3 เพิ่มโมเดลใหม่ (เช่น OpenAI GPT-4)
+1.  เปิดไฟล์ `requirements.txt` และเพิ่ม `openai` (มีอยู่แล้ว)
+2.  ตั้งค่า API Key ผ่าน Environment Variable หรือ `secrets.toml`:
     ```toml
     OPENAI_API_KEY = "sk-..."
     ```
-3.  แก้ไข `src/services.py`:
-    -   เพิ่มฟังก์ชันเรียก OpenAI
-    -   เพิ่มตัวเลือกใน UI (ไฟล์ `main.py`) ตรง `st.selectbox` ให้มีตัวเลือกใหม่
+3.  แก้ไข `src/config.py` เพิ่มโมเดลลงใน `MODELS`
+4.  แก้ไข `src/services.py` เพิ่ม logic การเรียกใช้งานใน `call_model_generator`
 
 ---
 

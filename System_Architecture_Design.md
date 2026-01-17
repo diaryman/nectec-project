@@ -40,13 +40,16 @@ graph TD
 ```
 
 ### รายละเอียดเทคโนโลยี (Tech Stack)
--   **Frontend**: Streamlit (Python Framework)
+-   **Frontend**: Streamlit (Python Framework) - Modernized UI/UX
 -   **Backend Logic**: Python 3.9+
 -   **Database (Relational)**: SQLite (`chat_history.db`)
--   **Database (Vector)**: ChromaDB (เก็บ Embedding ของเอกสาร)
+-   **Database (Vector)**: ChromaDB (เก็บ Embedding ของเอกสาร) - Local Persistence
 -   **AI Models**:
     -   Embedding: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (Local Execution)
-    -   LLM: Claude 3.5 Sonnet (AWS Bedrock), DeepSeek-V3
+    -   LLM:
+        -   **Cloud**: Claude 3.5 Sonnet (AWS Bedrock)
+        -   **Self-Hosted**: DeepSeek-V3 (Support Local/Self-Hosted API)
+-   **Security**: Environment Variable based secrets, Session Timeout, Sanitized Inputs
 -   **Deployment**: Docker & Docker Compose
 
 ---
@@ -59,16 +62,18 @@ graph TD
 ├── pages/
 │   └── 99_👮_Admin_Panel.py # หน้า Admin สำหรับจัดการไฟล์และระบบ
 ├── src/
+│   ├── config.py            # การตั้งค่าระบบ (Global Configuration)
 │   ├── database.py          # จัดการ Database SQLite (บันทึกแชท/Feedback)
-│   ├── services.py          # Business Logic หลัก และการเรียก LLM
-│   ├── vector_db.py         # จัดการ ChromaDB และ Embedding Model
+│   ├── services.py          # Business Logic หลัก, Caching และการเรียก LLM
+│   ├── vector_db.py         # จัดการ ChromaDB และ Embedding Model (+Caching)
 │   ├── ingest.py            # ระบบตัดคำ (Chunking) และอ่านไฟล์เอกสาร
-│   └── ui.py                # ส่วนแสดงผล UI (Chat bubbles, Cards)
+│   ├── ui.py                # ส่วนแสดงผล UI (Components, Styles)
+│   └── utils.py             # Utility functions (Security, Helpers)
 ├── knowledge_docs/          # โฟลเดอร์เก็บไฟล์เอกสารต้นฉบับ (PDF/DOCX)
 ├── chroma_db/               # โฟลเดอร์เก็บข้อมูล Vector Database
 ├── chat_history.db          # ไฟล์ Database SQLite
 ├── .streamlit/
-│   └── secrets.toml         # ไฟล์เก็บ API Keys (ห้ามนำขึ้น Git)
+│   └── secrets.toml         # (Optional) ไฟล์เก็บ API Keys สำหรับ Local Dev
 ├── docker-compose.yml       # ไฟล์ตั้งค่า Docker Container
 └── Dockerfile               # ไฟล์สร้าง Image Docker
 ```

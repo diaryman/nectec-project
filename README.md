@@ -69,22 +69,22 @@ pip install -r requirements.txt
 
 ## ⚙️ การตั้งค่า (Configuration)
 
-ระบบต้องการ API Keys เพื่อทำงาน (โดยเฉพาะ AWS Bedrock) ให้ทำตามขั้นตอนนี้:
+ระบบรองรับการตั้งค่าผ่าน **Environment Variables** (แนะนำสำหรับการใช้งานจริง) หรือไฟล์ `secrets.toml` (สำหรับ Local Development)
 
-1.  สร้างโฟลเดอร์ `.streamlit` ในโฟลเดอร์โปรเจกต์
-2.  สร้างไฟล์ชื่อ `secrets.toml` ข้างในโฟลเดอร์นั้น
-3.  เปิดไฟล์ `secrets.toml` และใส่ข้อมูลดังนี้:
-
+1.  สร้างไฟล์ `.streamlit/secrets.toml` (Optional):
 ```toml
-# .streamlit/secrets.toml
+# AWS Config
+AWS_ACCESS_KEY = "..."
+AWS_SECRET_KEY = "..."
 
-# AWS Credentials (สำหรับ Claude 3.5 Sonnet)
-AWS_ACCESS_KEY = "ใส่_Access_Key_ของคุณที่นี่"
-AWS_SECRET_KEY = "ใส่_Secret_Key_ของคุณที่นี่"
+# DeepSeek Self-Hosted (Optional)
+DEEPSEEK_SELF_HOSTED_URL = "http://your-server-ip:11434/v1"
 
-# รหัสผ่านสำหรับเข้าหน้า Admin
-ADMIN_PASSWORD = "ระบุรหัสผ่านที่ต้องการ"
+# Admin Password
+ADMIN_PASSWORD = "admin123"
 ```
+
+*หมายเหตุ: หากตั้งค่า Environment Variables ใน Docker หรือ OS ระบบจะใช้ค่าจาก Env Var เป็นหลัก*
 
 ---
 
