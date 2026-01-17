@@ -32,7 +32,7 @@ if not os.path.exists(DOCS_DIR):
     os.makedirs(DOCS_DIR)
 
 # Tabs
-tab1, tab2 = st.tabs(["📁 Document Management", "📊 System Status"])
+tab1, tab2, tab3 = st.tabs(["📁 Document Management", "📊 System Status", "🔍 ทดสอบการค้นหา (Test Retrieval)"])
 
 with tab1:
     st.subheader("จัดการเอกสาร (Knowledge Documents)")
@@ -123,3 +123,33 @@ with tab2:
             
     except FileNotFoundError:
         st.error("No secrets.toml found!")
+
+with tab3:
+    st.subheader("🔍 ทดสอบการสืบค้นข้อมูล (Retrieval Test)")
+    st.info("ใช้สำหรับตรวจสอบว่าระบบสามารถดึงข้อมูลจากเอกสารที่อัปโหลดได้หรือไม่")
+    
+    test_query = st.text_input("พิมพ์คำค้นหา (keyword) ที่มีในเอกสาร:", placeholder="เช่น ระยะเวลาฟ้องคดี...")
+    
+    if test_query:
+        try:
+             # Connect to DB
+            kb = LocalKnowledgeBase()
+            results = kb.search(test_query, n_results=5)
+            
+            if not results:
+                st.warning("⚠️ ไม่พบข้อมูลที่ตรงกับคำค้นหานี้ (0 chunks found)")
+            else:
+                st.success(f"✅ พบ {len(results)} รายการ (Chunks)")
+                
+                for i, r in enumerate(results):
+                    score = r.get('distance', 0)
+                    meta = r.get('metadata', {})
+                    text = r.get('text', '')
+                    fname = meta.get('source', 'Unknown')
+                    
+                    with st.expander(f"#{i+1} {fname} (Score: {score:.4f})", expanded=True):
+                        st.code(text, language='text')
+                        st.json(meta)
+                        
+        except Exception as e:
+            st.error(f"Error searching DB: {e}")
