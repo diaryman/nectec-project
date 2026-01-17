@@ -53,9 +53,6 @@ def get_deepseek_client():
 
 from src.vector_db import LocalKnowledgeBase
 
-# Initialize Local KB (Lazy Loading or Global)
-local_kb = LocalKnowledgeBase()
-
 @st.cache_data(ttl=3600, show_spinner=False)
 def retrieve_context(query, kb_id):
     """Retrieves relevant context from AWS Bedrock or Local ChromaDB."""
@@ -65,25 +62,21 @@ def retrieve_context(query, kb_id):
     # --- CASE 1: LOCAL RAG ---
     if kb_id == "LOCAL_KB":
         try:
+            # Re-initialize DB connection to ensure fresh state (DuckDB/Chroma quirk)
+            local_kb = LocalKnowledgeBase() 
             results = local_kb.search(query, n_results=5)
             ctx = ""
             citation_details = {}
-            
-            print(f"🔍 DEBUG: Local KB Results: {len(results)} chunks found")
             
             for r in results:
                 text_chunk = r['text']
                 meta = r['metadata']
                 fname = meta.get('source', 'Unknown Document')
                 
-                print(f"   📄 Found chunk from: {fname}")
-                
                 ctx += f"- {text_chunk}\n"
                 
                 if fname not in citation_details:
                     citation_details[fname] = text_chunk[:200].replace('\n', ' ') + "..."
-            
-            print(f"📦 DEBUG: Citations built: {list(citation_details.keys())}")
             
             if not ctx:
                 return "ไม่พบข้อมูลในฐานข้อมูลภายใน (Local Database)", {}

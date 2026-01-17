@@ -22,6 +22,7 @@ check_secrets()
 
 # 3. Initialize Session State
 if "messages" not in st.session_state:
+    st.cache_data.clear() # FORCE CLEAR CACHE ON RELOAD
     st.session_state.messages = []
 if "username_confirmed" not in st.session_state:
     st.session_state.username_confirmed = False
@@ -268,6 +269,12 @@ else:
                             
                             status.write("⚡ Generating Response...")
                             status.update(label="✅ Verified", state="complete", expanded=False)
+                            
+                            # DEBUG: Verify retrieval
+                            if cite:
+                                st.toast(f"✅ Found {len(cite)} citations!", icon="📚")
+                            else:
+                                st.toast("⚠️ No citations returned from retrieval", icon="⚠️")
                             
                             # Streaming Response
                             ph.empty()
