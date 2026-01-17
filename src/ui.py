@@ -1,5 +1,6 @@
 # src/ui.py
 import streamlit as st
+import textwrap
 
 # ==========================================
 # 🎨 THEME & CSS
@@ -231,7 +232,7 @@ def render_copy_button(text_to_copy, unique_key):
     """
     st.components.v1.html(html_code, height=40)
 
-def render_result_card(res_data, kb_name):
+def render_result_card(res_data, kb_name, show_answer=True):
     """Renders the standard result card for a model response with new UI."""
     icon = res_data['config']['icon']
     color = res_data['config']['color']
@@ -239,28 +240,37 @@ def render_result_card(res_data, kb_name):
     # Gradient for the model badge based on its color
     badge_style = f"background: linear-gradient(135deg, {color}, #555);"
     
-    # 1. Answer Section wrapper
+    answer_html = ""
+    if show_answer:
+        answer_html = textwrap.dedent(f"""\
+            <div class="card-content">
+                <div style="margin-top:0px; font-size:1.05rem;">{res_data['answer']}</div>
+            </div>
+        """)
+    
     # 1. Answer Section (Card Start)
-    st.markdown(f"""
-    <div class="response-card">
-        <div class="card-header">
-            <span class="model-badge" style="{badge_style}">{icon} {res_data['model']}</span>
-            <span style="font-size:0.8rem; font-weight:600; opacity:0.8; margin-left:12px;">📂 {kb_name}</span>
-            <span style="font-size:0.8rem; font-weight:600; opacity:0.6; margin-left:auto;">⏱️ {res_data['time']:.2f}s</span>
+    # Using textwrap.dedent - first line must be empty for proper dedenting
+    card_html = textwrap.dedent(f"""\
+        <div class="response-card">
+            <div class="card-header">
+                <span class="model-badge" style="{badge_style}">{icon} {res_data['model']}</span>
+                <span style="font-size:0.8rem; font-weight:600; opacity:0.8; margin-left:12px;">📂 {kb_name}</span>
+                <span style="font-size:0.8rem; font-weight:600; opacity:0.6; margin-left:auto;">⏱️ {res_data['time']:.2f}s</span>
+            </div>
+            {answer_html}
         </div>
-        <div class="card-content">
-            <div style="margin-top:0px; font-size:1.05rem;">{res_data['answer']}</div>
-        </div>
-        <div style="padding: 10px 25px; background: rgba(0,0,0,0.05); text-align: right; font-size: 0.8rem; opacity: 0.7;">
-            💸 Estimated Cost: <b>{res_data['cost']:.4f} THB</b>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    """)
+    st.markdown(card_html, unsafe_allow_html=True)
+    
     
     # 2. Citations Section (Outside the card to allow Streamlit Widgets to function correctly)
+    print(f"DEBUG UI: res_data.get('citations') = {res_data.get('citations')}")
     if res_data.get("citations"):
+        print(f"DEBUG UI: Rendering {len(res_data['citations'])} citations")
         st.markdown(f"<div style='margin: 10px 5px 5px 5px; font-size: 0.9rem; font-weight: 600; opacity: 0.9;'>📚 เอกสารอ้างอิง ({len(res_data['citations'])}):</div>", unsafe_allow_html=True)
         for fname, snippet in res_data['citations'].items():
             with st.expander(f"📄 {fname}", expanded=False):
                 st.info(f'"{snippet}"')
         st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
+    else:
+        print("DEBUG UI: No citations found in res_data")

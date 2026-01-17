@@ -130,18 +130,21 @@ def calculate_cost(model_id, full_text_in, full_text_out):
     cost = (in_tokens/1e6 * pricing[0]) + (out_tokens/1e6 * pricing[1])
     return cost * THB_RATE
 
-def call_single_model(model_name, prompt, context, citations_dict, temperature=0.5, placeholder=None):
-    """Invokes a single AI model, optionally streaming output to a placeholder."""
+def call_model_generator(model_name, prompt, context, citations_dict, temperature=0.5):
+    """
+    Generator function that yields chunks of the AI response.
+    Target for both Streamlit (st.write_stream) and FastAPI (StreamingResponse).
+    """
     cfg = MODELS[model_name]
     full_input = f"{SYSTEM_PROMPT}\n\nContext:\n{context}\n\nUser Question: {prompt}"
-    answer = ""
-    start_time = time.time()
     
     try:
         # --- BEDROCK ---
         if cfg["type"] == "bedrock":
             runtime = get_aws_runtime()
-            if not runtime: raise ValueError("AWS Credentials missing")
+            if not runtime: 
+                yield "⚠️ AWS Credentials missing"
+                return
             
             body = json.dumps({
                 "anthropic_version": "bedrock-2023-05-31", 
@@ -149,56 +152,61 @@ def call_single_model(model_name, prompt, context, citations_dict, temperature=0
                 "messages": [{"role": "user", "content": full_input}]
             })
             
-            if placeholder:
-                response = runtime.invoke_model_with_response_stream(modelId=cfg["id"], body=body)
-                stream = response.get('body')
-                if stream:
-                    for event in stream:
-                        chunk = event.get('chunk')
-                        if chunk:
-                            chunk_json = json.loads(chunk.get('bytes').decode())
-                            if 'delta' in chunk_json and 'text' in chunk_json['delta']:
-                                text_chunk = chunk_json['delta']['text']
-                                answer += text_chunk
-                                placeholder.markdown(answer + "▌")
-                    placeholder.markdown(answer)
-            else:
-                res = runtime.invoke_model(modelId=cfg["id"], body=body)
-                answer = json.loads(res.get('body').read())['content'][0]['text']
+            response = runtime.invoke_model_with_response_stream(modelId=cfg["id"], body=body)
+            stream = response.get('body')
+            if stream:
+                for event in stream:
+                    chunk = event.get('chunk')
+                    if chunk:
+                        chunk_json = json.loads(chunk.get('bytes').decode())
+                        if 'delta' in chunk_json and 'text' in chunk_json['delta']:
+                            yield chunk_json['delta']['text']
 
         # --- DEEPSEEK & SELF-HOSTED ---
         elif cfg["type"] in ["deepseek", "deepseek_self_hosted"]:
             if cfg["type"] == "deepseek":
                 client = get_deepseek_client()
             else:
-                 # Hardcoded IP needs to be verified or moved to config if dynamic
+                # Hardcoded IP needs to be verified or moved to config if dynamic
                 client = OpenAI(base_url="http://3.235.65.4:11434/v1", api_key="ollama", timeout=120.0)
             
-            if not client: raise ValueError("Client not initialized")
+            if not client: 
+                yield "⚠️ Client not initialized"
+                return
             
-            if placeholder:
-                stream = client.chat.completions.create(
-                    model=cfg["id"], temperature=temperature,
-                    messages=[{"role": "user", "content": full_input}],
-                    stream=True
-                )
-                for chunk in stream:
-                    if chunk.choices[0].delta.content is not None:
-                        answer += chunk.choices[0].delta.content
-                        placeholder.markdown(answer + "▌")
-                placeholder.markdown(answer)
-            else:
-                res = client.chat.completions.create(
-                    model=cfg["id"], temperature=temperature,
-                    messages=[{"role": "user", "content": full_input}]
-                )
-                answer = res.choices[0].message.content
-
+            stream = client.chat.completions.create(
+                model=cfg["id"], temperature=temperature,
+                messages=[{"role": "user", "content": full_input}],
+                stream=True
+            )
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
 
     except Exception as e:
-        answer = f"⚠️ Error: {str(e)}"
-        if placeholder: placeholder.error(answer)
+        yield f"⚠️ Error: {str(e)}"
+
+def call_single_model(model_name, prompt, context, citations_dict, temperature=0.5, placeholder=None):
+    """
+    Legacy/Wrapper function: Consumes the generator to return full object.
+    If placeholder is provided, it streams to it (kept for backward compatibility if needed).
+    """
+    cfg = MODELS[model_name]
+    full_input = f"{SYSTEM_PROMPT}\n\nContext:\n{context}\n\nUser Question: {prompt}"
+    answer = ""
+    start_time = time.time()
     
+    # Consume generator
+    gen = call_model_generator(model_name, prompt, context, citations_dict, temperature)
+    
+    for chunk in gen:
+        answer += chunk
+        if placeholder:
+            placeholder.markdown(answer + "▌")
+            
+    if placeholder:
+        placeholder.markdown(answer)
+        
     elapsed = time.time() - start_time
     
     return {
@@ -209,6 +217,35 @@ def call_single_model(model_name, prompt, context, citations_dict, temperature=0
         "config": cfg, 
         "time": elapsed
     }
+
+def generate_suggestions(context, query):
+    """
+    Generates 3 short follow-up questions based on the context and answer.
+    Uses a smaller/faster call if possible, or just the main model.
+    """
+    try:
+        # Use a lightweight model or the same model for suggestions
+        # For simplicity, using the first available model in list, or hardcode one
+        model_name = list(MODELS.keys())[0] 
+        cfg = MODELS[model_name]
+        
+        prompt = f"""
+        Based on the previous context and query: "{query}"
+        Generate 3 short, relevant follow-up questions in Thai.
+        Format: Return only the questions separated by newlines. No numbering.
+        """
+        
+        # Non-streaming call for suggestions
+        # reusing call_single_model but we need a simplified version or just call generator
+        # Let's just use the generator and join output
+        gen = call_model_generator(model_name, prompt, context, {}, 0.7)
+        full_text = "".join([c for c in gen])
+        
+        questions = [q.strip() for q in full_text.split('\n') if q.strip()]
+        return questions[:3]
+    except Exception as e:
+        print(f"Suggestion Error: {e}")
+        return []
 
 
 

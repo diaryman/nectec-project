@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-from src.config import MODELS, KNOWLEDGE_BASES
+import time
+from src.config import MODELS, KNOWLEDGE_BASES, SYSTEM_PROMPT
 from src.utils import check_secrets, check_session_timeout
 from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button
-from src.services import retrieve_context, call_single_model, save_feedback, get_aws_agent
+from src.services import retrieve_context, call_model_generator, generate_suggestions, calculate_cost, save_feedback, get_aws_agent
 from src.database import init_db, save_chat_log_db, get_chat_history_db
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
@@ -34,12 +35,29 @@ if not st.session_state.username_confirmed:
 # ==========================================
 # 🔐 LOGIN SCREEN
 # ==========================================
-if not st.session_state.username_confirmed:
-    c1, c2, c3 = st.columns([1, 2, 1])
+if 'username_confirmed' not in st.session_state or not st.session_state.username_confirmed:
+    # Try to load username from LocalStorage
+    from src.storage import load_username_from_storage, save_username_to_storage
+    
+    # Check if we have a stored username
+    if 'checked_storage' not in st.session_state:
+        st.session_state.checked_storage = True
+        # This will be handled by the component below
+    
+    _, c2, _ = st.columns([1, 2, 1])
     with c2:
         st.markdown("<div style='text-align: center; font-size: 80px;'>⚖️</div>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align: center;'>Smart Court AI</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; margin-bottom: 30px;'>ระบบผู้ช่วยอัจฉริยะศาลปกครอง</p>", unsafe_allow_html=True)
+        
+        # Try to load from LocalStorage
+        stored_username = load_username_from_storage()
+        
+        if stored_username and isinstance(stored_username, str) and stored_username.strip():
+            # Auto-login with stored username
+            st.session_state.username = stored_username.strip()
+            st.session_state.username_confirmed = True
+            st.rerun()
         
         with st.container(border=True):
             st.markdown("##### 👤 กรุณาระบุชื่อผู้ใช้งาน (User Identification)")
@@ -49,6 +67,8 @@ if not st.session_state.username_confirmed:
                 if name_input.strip():
                     st.session_state.username = name_input.strip()
                     st.session_state.username_confirmed = True
+                    # Save to LocalStorage
+                    save_username_to_storage(name_input.strip())
                     st.rerun()
                 else:
                     st.warning("⚠️ กรุณากรอกชื่อก่อนเริ่มใช้งาน")
@@ -97,8 +117,12 @@ else:
             col_save.download_button("📥 Save", chat_str, "log.txt", use_container_width=True)
 
     # ==========================================
-    # 🖥️ MAIN CONTENT
+    # 💬 MAIN CHAT INTERFACE
     # ==========================================
+    
+    # Update LocalStorage timestamp on activity
+    from src.storage import update_username_timestamp
+    update_username_timestamp()
     
     # Callback for Feedback
     def handle_feedback(key, username, prompt, model, answer):
@@ -120,21 +144,24 @@ else:
             prompt = st.session_state['auto_run_prompt']
             del st.session_state['auto_run_prompt']
         
-        if len(st.session_state.messages) == 0 and not prompt:
-            render_welcome_screen()
-            s_cols = st.columns(3)
-            questions = [
-                "ขั้นตอนการยื่นฟ้องคดีปกครองทำอย่างไร?",
-                "ศาลปกครองมีอำนาจพิจารณาคดีประเภทใดบ้าง?",
-                "การขอทุเลาการบังคับตามคำสั่งทางปกครองคืออะไร?"
-            ]
-            for i, q in enumerate(questions):
-                with s_cols[i]:
-                    if st.button(q, key=f"s_btn_{i}", use_container_width=True):
-                        prompt = q
         
         # Display History
         with chat_container:
+            # Show welcome screen only if no messages exist
+            if len(st.session_state.messages) == 0:
+                render_welcome_screen()
+                s_cols = st.columns(3)
+                questions = [
+                    "ขั้นตอนการยื่นฟ้องคดีปกครองทำอย่างไร?",
+                    "ศาลปกครองมีอำนาจพิจารณาคดีประเภทใดบ้าง?",
+                    "การขอทุเลาการบังคับตามคำสั่งทางปกครองคืออะไร?"
+                ]
+                for i, q in enumerate(questions):
+                    with s_cols[i]:
+                        if st.button(q, key=f"s_btn_{i}", use_container_width=True):
+                            prompt = q
+            
+            # Display conversation history
             for i, msg in enumerate(st.session_state.messages):
                 if msg["role"] == "user":
                     with st.chat_message("user", avatar="🧑‍💼"): 
@@ -187,14 +214,45 @@ else:
                         ctx, cite = retrieve_context(prompt, kb_id)
                         
                         status.write("⚡ Generating Response...")
-                        res = call_single_model(model_name, prompt, ctx, cite, temp_val, ph)
+                        status.update(label="✅ Verified", state="complete", expanded=False)
                         
-                        status.update(label="✅ เสร็จสิ้น", state="complete", expanded=False)
-                        
+                        # Streaming Response
                         ph.empty()
-                        render_result_card(res, kb_name)
-                        render_copy_button(res['answer'], f"live_{len(st.session_state.messages)}")
+                        start_time = time.time()
+                        gen = call_model_generator(model_name, prompt, ctx, cite, temp_val)
+                        full_response = st.write_stream(gen)
+                        elapsed_time = time.time() - start_time
                         
+                        # Calculate Cost & Build Response Object
+                        cost = calculate_cost(MODELS[model_name]["id"], f"{SYSTEM_PROMPT}\n\nContext:\n{ctx}\n\nUser Question: {prompt}", full_response)
+                        
+                        res = {
+                            "model": model_name,
+                            "answer": full_response,
+                            "citations": cite,
+                            "cost": cost,
+                            "time": elapsed_time,
+                            "config": MODELS[model_name]
+                        }
+                        
+                        # Debug: Check if citations exist
+                        print(f"DEBUG: Citations in response: {cite}")
+                        print(f"DEBUG: Number of citations: {len(cite) if cite else 0}")
+                        
+                        render_result_card(res, kb_name, show_answer=False) # Only show citations/metadata
+                        # render_copy_button(res['answer'], f"live_{len(st.session_state.messages)}") # Already shown by write_stream? No, copy button is separate
+                        
+                        # Smart Suggestions
+                        st.divider()
+                        st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
+                        suggs = generate_suggestions(ctx, prompt)
+                        cols_sug = st.columns(len(suggs))
+                        for i, s_q in enumerate(suggs):
+                            if cols_sug[i].button(s_q, key=f"sug_{len(st.session_state.messages)}_{i}", use_container_width=True):
+                                st.session_state['auto_run_prompt'] = s_q
+                                st.rerun()
+
+                        st.divider()
                         st.caption("ให้คะแนนคำตอบ:")
                         st.feedback("stars", key=f"live_fb_{len(st.session_state.messages)}", on_change=handle_feedback, args=(f"live_fb_{len(st.session_state.messages)}", username, prompt, res['model'], res['answer']))
                         
