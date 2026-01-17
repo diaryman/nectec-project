@@ -235,9 +235,13 @@ def render_header():
 
 def render_welcome_screen():
     st.markdown("""
-        <div style="text-align: center; padding: 40px 20px; opacity: 0.8; animation: slideIn 1s ease-out;">
-            <h3>👋 ยินดีต้อนรับสู่ Smart Court AI</h3>
-            <p style="font-size: 1.1rem;">เริ่มต้นใช้งานโดยเลือกคำถามตัวอย่าง หรือพิมพ์คำถามของคุณที่ด้านล่าง</p>
+        <div style="text-align: center; padding: 50px 20px; animation: slideIn 1s ease-out;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🤖💬</div>
+            <h3 style="margin-bottom: 10px; font-weight: 600;">ยินดีต้อนรับสู่ Smart Court AI</h3>
+            <p style="font-size: 1rem; opacity: 0.8; max-width: 500px; margin: 0 auto;">
+                ระบบผู้ช่วยอัจฉริยะที่พร้อมตอบคำถามเกี่ยวกับศาลปกครอง<br/>
+                เลือกคำถามด้านล่าง หรือพิมพ์คำถามของคุณเอง
+            </p>
         </div>
     """, unsafe_allow_html=True)
 

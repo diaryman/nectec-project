@@ -42,25 +42,51 @@ if 'username_confirmed' not in st.session_state or not st.session_state.username
         st.session_state.username_confirmed = True
         st.rerun()
     
-    _, c2, _ = st.columns([1, 2, 1])
+    # Login page custom CSS
+    st.markdown("""
+    <style>
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .login-icon { font-size: 100px; display: block; text-align: center; animation: float 3s ease-in-out infinite; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { font-size: 2.5rem; font-weight: 700; margin: 10px 0 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .login-header p { opacity: 0.7; font-size: 1.1rem; }
+        .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 25px; }
+        .feature-item { text-align: center; padding: 15px 10px; background: rgba(100, 126, 234, 0.05); border-radius: 12px; font-size: 0.85rem; }
+        .feature-item .icon { font-size: 24px; margin-bottom: 5px; }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    _, c2, _ = st.columns([1, 2.5, 1])
     with c2:
-        st.markdown("<div style='text-align: center; font-size: 80px;'>🤖</div>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center;'>Smart Court AI</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; margin-bottom: 30px;'>ระบบผู้ช่วยอัจฉริยะศาลปกครอง</p>", unsafe_allow_html=True)
+        st.markdown('<div class="login-icon">🤖</div>', unsafe_allow_html=True)
+        st.markdown("""
+            <div class="login-header">
+                <h1>Smart Court AI</h1>
+                <p>ผู้ช่วยอัจฉริยะศาลปกครอง</p>
+            </div>
+        """, unsafe_allow_html=True)
         
         with st.container(border=True):
-            st.markdown("##### 👤 กรุณาระบุชื่อผู้ใช้งาน (User Identification)")
+            st.markdown("##### 👤 กรุณาระบุชื่อผู้ใช้งาน")
             name_input = st.text_input("ชื่อของคุณ", placeholder="เช่น Officer A, สมชาย, ...", label_visibility="collapsed")
             
-            if st.button("🚀 เข้าสู่ระบบ (Start)", type="primary", use_container_width=True):
+            if st.button("🚀 เริ่มต้นใช้งาน", type="primary", use_container_width=True):
                 if name_input.strip():
                     st.session_state.username = name_input.strip()
                     st.session_state.username_confirmed = True
-                    # Set Query Param for persistence
                     st.query_params["user"] = name_input.strip()
                     st.rerun()
                 else:
                     st.warning("⚠️ กรุณากรอกชื่อก่อนเริ่มใช้งาน")
+        
+        # Feature highlights
+        st.markdown("""
+            <div class="feature-grid">
+                <div class="feature-item"><div class="icon">📚</div>สืบค้นข้อมูลกฎหมาย</div>
+                <div class="feature-item"><div class="icon">💬</div>ถาม-ตอบ AI</div>
+                <div class="feature-item"><div class="icon">⚡</div>รวดเร็วแม่นยำ</div>
+            </div>
+        """, unsafe_allow_html=True)
     st.stop()
 
 else:
@@ -68,49 +94,64 @@ else:
     # 🏗️ SIDEBAR (Logged In)
     # ==========================================
     with st.sidebar:
-        st.markdown("""<div style="text-align: center; margin-bottom: 20px;"><div class="court-icon">🤖</div></div>""", unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center;'>AI Assistant</h3>", unsafe_allow_html=True)
-        st.markdown("---")
+        # Brand Header
+        st.markdown("""
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="font-size: 60px; margin-bottom: 5px;">🤖</div>
+                <h3 style="margin: 0; font-weight: 700;">AI Assistant</h3>
+                <p style="opacity: 0.7; font-size: 0.85rem; margin-top: 5px;">ศาลปกครอง</p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        with st.expander("⚙️ ตั้งค่า (Settings)", expanded=True):
-            theme_choice = st.radio("Theme Mode", ["🌙 Modern Dark", "☀️ Official Light"], index=1, label_visibility="collapsed")
+        # User Info Card
+        username = st.session_state.username
+        st.markdown(f"""
+            <div style="background: rgba(100, 126, 234, 0.1); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; border-left: 3px solid #667eea;">
+                <div style="font-size: 0.85rem; opacity: 0.7;">👤 ผู้ใช้งาน:</div>
+                <div style="font-weight: 600; font-size: 1.1rem;">{username}</div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Settings Expander
+        with st.expander("⚙️ ตั้งค่า", expanded=False):
+            theme_choice = st.radio("ธีม", ["🌙 Modern Dark", "☀️ Official Light"], index=1, label_visibility="collapsed")
             load_custom_css(theme_choice)
-            
-            st.text_input("ชื่อผู้ใช้งาน (User)", value=st.session_state.username, disabled=True)
-            username = st.session_state.username
-            
-            temp_val = st.slider("ความสร้างสรรค์ (Temperature)", 0.0, 1.0, 0.3)
-    
-        st.markdown("---")
+            temp_val = st.slider("🎯 ความสร้างสรรค์ (Temperature)", 0.0, 1.0, 0.3, help="ค่าต่ำ = ตอบตรงประเด็น / ค่าสูง = สร้างสรรค์มากขึ้น")
         
         # Default Config (Hidden or Just Info)
-        # Using First KB and First Model as default
         kb_name = list(KNOWLEDGE_BASES.keys())[0]
         kb_id = KNOWLEDGE_BASES[kb_name]
-        
         model_name = list(MODELS.keys())[0]
         
-        st.info(f"📚 **Knowledge Base:**\n{kb_name}")
-        st.info(f"🤖 **Model:**\n{model_name}")
-
+        # System Info Card
+        st.markdown(f"""
+            <div style="background: rgba(50, 50, 60, 0.05); border-radius: 10px; padding: 12px; margin: 15px 0; font-size: 0.85rem;">
+                <div style="margin-bottom: 8px;"><b>📚 คลังข้อมูล:</b><br/><span style="opacity: 0.8;">{kb_name.replace('💻 ', '')}</span></div>
+                <div><b>🤖 โมเดล AI:</b><br/><span style="opacity: 0.8;">{model_name}</span></div>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("---")
         
-        col_clr, col_save = st.columns(2)
-        if col_clr.button("🗑️ Reset", use_container_width=True):
-            st.session_state.messages = []
-            if 'auto_run_prompt' in st.session_state: del st.session_state['auto_run_prompt']
-            # Clear persistence
-            st.query_params.clear()
-            st.rerun()
+        # Action Buttons
+        st.markdown("การจัดการ", help="คำสั่งการทำงาน")
+        col1, col2 = st.columns(2)
         
-        # Clear Conversation Button (with confirmation)
-        if col_save.button("🧹 Clear", use_container_width=True, help="ล้างการสนทนาทั้งหมด"):
-            if st.session_state.get("messages"):
-                st.session_state['confirm_clear'] = True
-            else:
-                st.toast("ไม่มีการสนทนาที่จะล้าง", icon="ℹ️")
+        with col1:
+            if st.button("🗑️ Reset", use_container_width=True, help="ออกจากระบบและเข้าสู่ระบบใหม่"):
+                st.session_state.messages = []
+                if 'auto_run_prompt' in st.session_state: del st.session_state['auto_run_prompt']
+                st.query_params.clear()
+                st.rerun()
         
-        # Confirmation dialog for clear
+        with col2:
+            if st.button("🧹 Clear Chat", use_container_width=True, help="ล้างการสนทนาทั้งหมด"):
+                if st.session_state.get("messages"):
+                    st.session_state['confirm_clear'] = True
+                else:
+                    st.toast("ไม่มีการสนทนาที่จะล้าง", icon="ℹ️")
+        
+        # Confirmation dialog
         if st.session_state.get('confirm_clear'):
             st.warning("⚠️ ต้องการล้างการสนทนาทั้งหมดหรือไม่?")
             col_yes, col_no = st.columns(2)
@@ -122,21 +163,22 @@ else:
             if col_no.button("❌ ไม่", use_container_width=True, key="confirm_no"):
                 st.session_state['confirm_clear'] = False
                 st.rerun()
-            
+        
+        # Download Button
         if st.session_state.get("messages"):
-            chat_str = "\n".join([f"{m['role']}: {m['content']}" if m['role']=='user' else f"AI: {m['response']['answer']}" for m in st.session_state.messages])
-            st.download_button("📥 Save", chat_str, "log.txt", use_container_width=True)
+            chat_str = "\n".join([f"ผู้ใช้: {m['content']}" if m['role']=='user' else f"AI: {m['response']['answer']}" for m in st.session_state.messages])
+            st.download_button("📥 บันทึกการสนทนา", chat_str, "smart_court_chat.txt", use_container_width=True)
         
         st.markdown("---")
         
-        # System Status Indicator
-        st.markdown("### 📊 สถานะระบบ")
-        col_status, col_time = st.columns([3, 2])
-        with col_status:
-            st.success("🟢 ออนไลน์")
-        with col_time:
-            from datetime import datetime
-            st.caption(f"🕐 {datetime.now().strftime('%H:%M')}")
+        # System Status
+        from datetime import datetime
+        st.markdown(f"""
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                <span>🟢 ระบบพร้อมใช้งาน</span>
+                <span style="opacity: 0.7;">🕐 {datetime.now().strftime('%H:%M')}</span>
+            </div>
+        """, unsafe_allow_html=True)
 
     # ==========================================
     # 💬 MAIN CHAT INTERFACE
@@ -169,15 +211,20 @@ else:
             # Show welcome screen only if no messages exist
             if len(st.session_state.messages) == 0:
                 render_welcome_screen()
-                s_cols = st.columns(3)
+                
+                # Sample questions with icons
+                st.markdown("<p style='text-align: center; opacity: 0.6; font-size: 0.9rem; margin-bottom: 15px;'>📌 คำถามยอดนิยม</p>", unsafe_allow_html=True)
+                
                 questions = [
-                    "ขั้นตอนการยื่นฟ้องคดีปกครองทำอย่างไร?",
-                    "ศาลปกครองมีอำนาจพิจารณาคดีประเภทใดบ้าง?",
-                    "การขอทุเลาการบังคับตามคำสั่งทางปกครองคืออะไร?"
+                    ("📋", "ขั้นตอนการยื่นฟ้องคดีปกครองทำอย่างไร?"),
+                    ("⚖️", "ศาลปกครองมีอำนาจพิจารณาคดีประเภทใดบ้าง?"),
+                    ("📜", "การขอทุเลาการบังคับตามคำสั่งทางปกครองคืออะไร?")
                 ]
-                for i, q in enumerate(questions):
+                
+                s_cols = st.columns(3)
+                for i, (icon, q) in enumerate(questions):
                     with s_cols[i]:
-                        if st.button(q, key=f"s_btn_{i}", use_container_width=True):
+                        if st.button(f"{icon} {q[:30]}...", key=f"s_btn_{i}", use_container_width=True, help=q):
                             prompt = q
             
             # Display conversation history
@@ -186,7 +233,7 @@ else:
                     with st.chat_message("user", avatar="🧑‍💼"): 
                         render_user_message(msg['content'])
                 else:
-                    with st.chat_message("assistant", avatar="⚖️"):
+                    with st.chat_message("assistant", avatar="🤖"):
                         prompt_text = "History"
                         if i > 0 and st.session_state.messages[i-1]["role"] == "user":
                             prompt_text = st.session_state.messages[i-1]["content"]
