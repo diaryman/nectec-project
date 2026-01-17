@@ -62,6 +62,11 @@ def load_custom_css(theme_mode="Modern Dark"):
             50% {{ transform: scale(1.05); }}
             100% {{ transform: scale(1); }}
         }}
+        
+        @keyframes float {{
+            0%, 100% {{ transform: translateY(0px); }}
+            50% {{ transform: translateY(-10px); }}
+        }}
 
         /* Header */
         .court-header {{ 
@@ -82,7 +87,7 @@ def load_custom_css(theme_mode="Modern Dark"):
             font-size: 80px; line-height: 1; cursor: default; 
             color: #FFD700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.5); 
             display: inline-block; 
-            animation: pulse 3s infinite ease-in-out;
+            animation: float 3s infinite ease-in-out;
         }}
         
         /* Glassmorphism Card */
@@ -133,7 +138,55 @@ def load_custom_css(theme_mode="Modern Dark"):
         
         /* Inputs & Sidebar */
         .stChatInput textarea {{ background-color: {input_bg} !important; border-radius: 25px !important; border: {glass_border} !important; color: {text_color} !important; }}
-        [data-testid="stSidebar"] {{ background-color: {sidebar_bg}; border-right: 1px solid rgba(128,128,128,0.1); }}
+        [data-testid="stSidebar"] {{ background-color: {sidebar_bg}; border-right: 1px solid rgba(128,128,128,0.1); padding-top: 2rem; }}
+        
+        /* ==================== ENHANCED SIDEBAR STYLING ==================== */
+        /* Sidebar header styling */
+        [data-testid="stSidebar"] h3 {{
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        
+        /* Sidebar dividers */
+        [data-testid="stSidebar"] hr {{
+            margin: 1.5rem 0;
+            border: none;
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
+        }}
+        
+        /* Expander styling in sidebar */
+        [data-testid="stSidebar"] .streamlit-expanderHeader {{
+            background: {glass_bg};
+            border: {glass_border};
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }}
+        
+        [data-testid="stSidebar"] .streamlit-expanderHeader:hover {{
+            background: rgba(100, 100, 120, 0.15);
+            transform: translateX(2px);
+        }}
+        
+        [data-testid="stSidebar"] .streamlit-expanderContent {{
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 10px 10px;
+            padding: 1rem;
+        }}
+        
+        /* Sidebar buttons enhanced */
+        [data-testid="stSidebar"] button {{
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }}
+        
+        [data-testid="stSidebar"] button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }}
         
         /* Sidebar Input Visibility Improvements */
         [data-testid="stSidebar"] input {{
