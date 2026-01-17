@@ -20,23 +20,71 @@
 
 ```mermaid
 graph TD
-    User[ผู้ใช้งาน (User)] -->|สอบถาม| UI[หน้าเว็บ (main.py)]
-    UI -->|ส่งคำสั่ง| Service[บริการหลัก (src/services.py)]
-    
-    subgraph "Data & Knowledge Layer"
-        Service -->|ค้นหาเอกสารอ้างอิง| VectorDB[(ChromaDB)]
-        Service -->|บันทึกประวัติ/Feedback| SQLDB[(SQLite: chat_history.db)]
-        VectorDB <-->|นำเข้าข้อมูล| Docs[ไฟล์เอกสาร (PDF/DOCX)]
+    %% Users
+    User((👤 ผู้ใช้งานทั่วไป))
+    Admin((👮 ผู้ดูแลระบบ))
+
+    %% Docker Container Boundary
+    subgraph "🐳 Docker Container (smart-court-ai)"
+        style DockerContainer fill:#e1f5fe,stroke:#01579b,stroke-width:2px,stroke-dasharray: 5 5
+        
+        subgraph "Frontend Layer (Streamlit)"
+            MainApp[main.py<br/>(หน้าแชทหลัก)]
+            AdminPage[pages/99_Admin.py<br/>(หน้าจัดการระบบ)]
+            UILib[src/ui.py<br/>(ตัวจัดการแสดงผล & Sidebar)]
+        end
+
+        subgraph "Logic & Service Layer"
+            Service[src/services.py<br/>(Business Logic / RAG Orchestrator)]
+            Ingest[src/ingest.py<br/>(ระบบตัดคำ & PDF Processor)]
+            VectorLib[src/vector_db.py<br/>(ตัวจัดการ ChromaDB)]
+            DBLib[src/database.py<br/>(ตัวจัดการ SQLite)]
+        end
+
+        subgraph "Data Persistence (Volumes)"
+            style VolumeLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+            LocalKB[(📂 knowledge_docs)]
+            ChromaDB[(🧩 ChromaDB Index)]
+            SQLite[(🗄️ chat_history.db)]
+        end
     end
-    
-    subgraph "AI Inference Layer"
-        Service -->|สร้างคำตอบ| AWS[AWS Bedrock (Claude 3.5)]
-        Service -->|สร้างคำตอบ| DeepSeek[DeepSeek API]
+
+    %% External APIs
+    subgraph "☁️ External AI Services"
+        AWS[AWS Bedrock<br/>(Claude 3.5 Sonnet)]
+        DeepSeek[DeepSeek API<br/>(Self-Hosted/Cloud)]
     end
+
+    %% Key Interactions
+    User -->|เข้าใช้งาน| MainApp
+    Admin -->|เข้าใช้งาน| AdminPage
+
+    %% Frontend wiring
+    MainApp -->|เรียกใช้| UILib
+    AdminPage -->|เรียกใช้| UILib
     
-    Admin[ผู้ดูแลระบบ (Admin)] -->|จัดการระบบ| AdminUI[หน้าแอดมิน (pages/99_Admin.py)]
-    AdminUI -->|อัปโหลดไฟล์| Docs
-    AdminUI -->|Re-indexes| VectorDB
+    MainApp -->|ส่งคำถาม| Service
+    AdminPage -->|สั่ง Rebuild Index| Ingest
+    AdminPage -->|ทดสอบการค้นหา| Service
+
+    %% Logic wiring
+    Service -->|1. ค้นหาเอกสาร| VectorLib
+    VectorLib -->|Query| ChromaDB
+    
+    Service -->|2. สร้าง Prompt| AWS
+    Service -->|2. สร้าง Prompt| DeepSeek
+
+    Service -->|3. บันทึกประวัติ| DBLib
+    DBLib -->|Insert/Update| SQLite
+
+    %% Ingestion wiring
+    Ingest -->|อ่านไฟล์| LocalKB
+    Ingest -->|สร้าง Index| VectorLib
+    VectorLib -->|Save| ChromaDB
+
+    %% External Connections
+    Service -.->|API Request| AWS
+    Service -.->|API Request| DeepSeek
 ```
 
 ### รายละเอียดเทคโนโลยี (Tech Stack)
