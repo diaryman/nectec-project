@@ -389,3 +389,124 @@ def render_sidebar_menu():
         st.markdown("<div style='color: gray; font-size: 0.8rem; margin-bottom: 10px; font-weight: 600;'>การจัดการ (SYSTEM)</div>", unsafe_allow_html=True)
         
         st.page_link("pages/99_👮_Admin_Panel.py", label="ผู้ดูแลระบบ (Admin)", icon="👮")
+
+def render_login_screen():
+    """
+    Renders the modern login screen with Glassmorphism UI.
+    Handles user input and session state updates.
+    """
+    # Custom CSS for Login Screen
+    st.markdown("""
+    <style>
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            text-align: center;
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        .login-icon { 
+            font-size: 80px; 
+            margin-bottom: 20px; 
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .login-title {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .login-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .feature-item {
+            background: rgba(100, 126, 234, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-3px);
+            background: rgba(100, 126, 234, 0.1);
+        }
+        
+        .feature-icon { font-size: 24px; margin-bottom: 8px; }
+        .feature-text { font-size: 0.85rem; font-weight: 600; color: #555; }
+        
+        /* Input Styling Override */
+        .stTextInput input {
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 12px;
+            border-radius: 12px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Layout using columns for centering
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("""
+            <div class="login-container">
+                <div class="login-icon">🤖</div>
+                <div class="login-title">Smart Court AI</div>
+                <div class="login-subtitle">ระบบผู้ช่วยอัจฉริยะศาลปกครอง</div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.write("") # Spacer
+        
+        with st.container(border=True):
+            st.markdown("<div style='text-align:center; margin-bottom:10px; font-weight:600;'>👋 ยินดีต้อนรับ! กรุณาระบุชื่อเพื่อเริ่มใช้งาน</div>", unsafe_allow_html=True)
+            
+            name_input = st.text_input("ชื่อของคุณ", placeholder="เช่น สมชาย, เจ้าหน้าที่ A...", label_visibility="collapsed")
+            
+            if st.button("🚀 เข้าสู่ระบบ (Start)", type="primary", use_container_width=True):
+                if name_input.strip():
+                    st.session_state.username = name_input.strip()
+                    st.session_state.username_confirmed = True
+                    st.query_params["user"] = name_input.strip()
+                    st.rerun()
+                else:
+                    st.toast("⚠️ กรุณากรอกชื่อก่อนเริ่มใช้งาน")
+        
+        # Feature Grid
+        st.markdown("""
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">⚖️</div>
+                    <div class="feature-text">ข้อมูลกฎหมาย</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">รวดเร็วแม่นยำ</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">ปลอดภัย</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)

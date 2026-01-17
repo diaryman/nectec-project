@@ -3,7 +3,7 @@ import pandas as pd
 import time
 from src.config import MODELS, KNOWLEDGE_BASES, SYSTEM_PROMPT
 from src.utils import check_secrets, check_session_timeout
-from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button, render_sidebar_menu
+from src.ui import load_custom_css, render_header, render_user_message, render_result_card, render_welcome_screen, render_copy_button, render_sidebar_menu, render_login_screen
 from src.services import retrieve_context, call_model_generator, generate_suggestions, calculate_cost, save_feedback, get_aws_agent
 from src.database import init_db, save_chat_log_db, get_chat_history_db
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
@@ -43,50 +43,8 @@ if 'username_confirmed' not in st.session_state or not st.session_state.username
         st.rerun()
     
     # Login page custom CSS
-    st.markdown("""
-    <style>
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-        .login-icon { font-size: 100px; display: block; text-align: center; animation: float 3s ease-in-out infinite; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h1 { font-size: 2.5rem; font-weight: 700; margin: 10px 0 5px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .login-header p { opacity: 0.7; font-size: 1.1rem; }
-        .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 25px; }
-        .feature-item { text-align: center; padding: 15px 10px; background: rgba(100, 126, 234, 0.05); border-radius: 12px; font-size: 0.85rem; }
-        .feature-item .icon { font-size: 24px; margin-bottom: 5px; }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    _, c2, _ = st.columns([1, 2.5, 1])
-    with c2:
-        st.markdown('<div class="login-icon">🤖</div>', unsafe_allow_html=True)
-        st.markdown("""
-            <div class="login-header">
-                <h1>Smart Court AI</h1>
-                <p>ผู้ช่วยอัจฉริยะศาลปกครอง</p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        with st.container(border=True):
-            st.markdown("##### 👤 กรุณาระบุชื่อผู้ใช้งาน")
-            name_input = st.text_input("ชื่อของคุณ", placeholder="เช่น Officer A, สมชาย, ...", label_visibility="collapsed")
-            
-            if st.button("🚀 เริ่มต้นใช้งาน", type="primary", use_container_width=True):
-                if name_input.strip():
-                    st.session_state.username = name_input.strip()
-                    st.session_state.username_confirmed = True
-                    st.query_params["user"] = name_input.strip()
-                    st.rerun()
-                else:
-                    st.warning("⚠️ กรุณากรอกชื่อก่อนเริ่มใช้งาน")
-        
-        # Feature highlights
-        st.markdown("""
-            <div class="feature-grid">
-                <div class="feature-item"><div class="icon">📚</div>สืบค้นข้อมูลกฎหมาย</div>
-                <div class="feature-item"><div class="icon">💬</div>ถาม-ตอบ AI</div>
-                <div class="feature-item"><div class="icon">⚡</div>รวดเร็วแม่นยำ</div>
-            </div>
-        """, unsafe_allow_html=True)
+    # Display Modern Login Screen
+    render_login_screen()
     st.stop()
 
 else:
