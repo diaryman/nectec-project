@@ -142,9 +142,6 @@ else:
     # 💬 MAIN CHAT INTERFACE
     # ==========================================
     
-    # Update LocalStorage timestamp on activity
-    from src.storage import update_username_timestamp
-    update_username_timestamp()
     
     # Callback for Feedback
     def handle_feedback(key, username, prompt, model, answer):
