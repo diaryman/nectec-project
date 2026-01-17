@@ -10,26 +10,52 @@ check_session_timeout()
 # Force light theme for better readability
 st.markdown("""
 <style>
-    /* Force light theme */
+    /* Force light theme for entire app */
     .stApp {
-        background-color: #ffffff;
-        color: #1a1a1a;
+        background-color: #f0f2f6 !important;
+        color: #1a1a1a !important;
     }
     
-    /* Sidebar light theme */
+    /* Sidebar light theme with high contrast */
     [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
+        background-color: #ffffff !important;
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: #1a1a1a !important;
+    }
+    
+    /* Sidebar navigation links */
+    [data-testid="stSidebar"] a {
+        color: #0066cc !important;
+    }
+    
+    [data-testid="stSidebar"] a:hover {
+        color: #004499 !important;
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
     }
     
     /* Expander styling */
     .streamlit-expanderHeader {
-        background-color: #f0f2f6;
-        color: #1a1a1a;
+        background-color: #e8eaf6 !important;
+        color: #1a1a1a !important;
         font-weight: 600;
+        border: 1px solid #c5cae9;
     }
     
-    /* Text elements */
-    p, li, span, div {
+    .streamlit-expanderContent {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+    }
+    
+    /* All text elements */
+    p, li, span, div, label {
         color: #1a1a1a !important;
     }
     
@@ -40,14 +66,29 @@ st.markdown("""
     
     /* Info boxes */
     .stAlert {
-        background-color: #e7f3ff;
-        color: #1a1a1a;
+        background-color: #e3f2fd !important;
+        color: #1a1a1a !important;
+        border: 1px solid #90caf9;
     }
     
     /* Buttons */
     .stButton button {
-        background-color: #0066cc;
-        color: white;
+        background-color: #1976d2 !important;
+        color: white !important;
+        border: none;
+    }
+    
+    .stButton button:hover {
+        background-color: #1565c0 !important;
+    }
+    
+    /* Links */
+    a {
+        color: #1976d2 !important;
+    }
+    
+    a:hover {
+        color: #1565c0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
