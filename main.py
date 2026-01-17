@@ -207,6 +207,15 @@ else:
                         render_result_card(res, msg["kb_name"])
                         render_copy_button(res['answer'], f"hist_{i}")
                         st.feedback("stars", key=f"hist_fb_{i}", on_change=handle_feedback, args=(f"hist_fb_{i}", username, prompt_text, res['model'], res['answer']))
+                        
+                        # Show suggestions in history
+                        if "suggestions" in res and res["suggestions"]:
+                            st.caption("💡 คำถามที่เกี่ยวข้อง:")
+                            s_cols = st.columns(len(res["suggestions"]))
+                            for j, s_q in enumerate(res["suggestions"]):
+                                if s_cols[j].button(s_q, key=f"hist_sug_{i}_{j}", use_container_width=True):
+                                    st.session_state['auto_run_prompt'] = s_q
+                                    st.rerun()
 
         # Regenerate Button
         if len(st.session_state.messages) > 0:
@@ -267,13 +276,17 @@ else:
                             # Calculate Cost & Build Response Object
                             cost = calculate_cost(MODELS[model_name]["id"], f"{SYSTEM_PROMPT}\n\nContext:\n{ctx}\n\nUser Question: {prompt}", full_response)
                             
+                            # Smart Suggestions
+                            suggs = generate_suggestions(ctx, prompt)
+                            
                             res = {
                                 "model": model_name,
                                 "answer": full_response,
                                 "citations": cite,
                                 "cost": cost,
                                 "time": elapsed_time,
-                                "config": MODELS[model_name]
+                                "config": MODELS[model_name],
+                                "suggestions": suggs
                             }
                             
                             # Debug: Check if citations exist
@@ -281,17 +294,16 @@ else:
                             print(f"DEBUG: Number of citations: {len(cite) if cite else 0}")
                             
                             render_result_card(res, kb_name, show_answer=False) # Only show citations/metadata
-                            # render_copy_button(res['answer'], f"live_{len(st.session_state.messages)}") # Already shown by write_stream? No, copy button is separate
                             
-                            # Smart Suggestions
-                            st.divider()
-                            st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
-                            suggs = generate_suggestions(ctx, prompt)
-                            cols_sug = st.columns(len(suggs))
-                            for i, s_q in enumerate(suggs):
-                                if cols_sug[i].button(s_q, key=f"sug_{len(st.session_state.messages)}_{i}", use_container_width=True):
-                                    st.session_state['auto_run_prompt'] = s_q
-                                    st.rerun()
+                            # Show suggestions live
+                            if suggs:
+                                st.divider()
+                                st.caption("💡 คำถามที่เกี่ยวข้อง (Suggested Questions):")
+                                cols_sug = st.columns(len(suggs))
+                                for j, s_q in enumerate(suggs):
+                                    if cols_sug[j].button(s_q, key=f"live_sug_{len(st.session_state.messages)}_{j}", use_container_width=True):
+                                        st.session_state['auto_run_prompt'] = s_q
+                                        st.rerun()
 
                             st.divider()
                             st.caption("ให้คะแนนคำตอบ:")
