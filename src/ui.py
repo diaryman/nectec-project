@@ -324,6 +324,5 @@ def render_result_card(res_data, kb_name, show_answer=True):
         for fname, snippet in res_data['citations'].items():
             with st.expander(f"📄 {fname}", expanded=False):
                 st.info(f'"{snippet}"')
-        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
     else:
         print("DEBUG UI: No citations found in res_data")
