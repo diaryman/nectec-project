@@ -324,7 +324,7 @@ def render_result_card(res_data, kb_name, show_answer=True):
     if res_data.get("citations"):
         st.markdown(f"""
             <div style='margin: 15px 5px 10px 5px; border-left: 3px solid #667eea; padding-left: 12px;'>
-                <span style='font-size: 0.95rem; font-weight: 600; color: {text_color}cc;'>📚 เอกสารอ้างอิง ({len(res_data['citations'])}):</span>
+                <span style='font-size: 0.95rem; font-weight: 600; opacity: 0.85;'>📚 เอกสารอ้างอิง ({len(res_data['citations'])}):</span>
             </div>
         """, unsafe_allow_html=True)
         
