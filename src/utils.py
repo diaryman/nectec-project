@@ -16,9 +16,8 @@ def check_session_timeout(timeout_secs=1800):
     elapsed = current_time - st.session_state['last_active']
 
     if elapsed > timeout_secs:
-        # Timeout occurred - clear LocalStorage
-        from src.storage import clear_username_storage
-        clear_username_storage()
+        # Timeout occurred - clear persistence
+        st.query_params.clear()
         
         keys_to_clear = ['username_confirmed', 'admin_logged_in', 'username', 'messages']
         for key in keys_to_clear:

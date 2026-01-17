@@ -36,28 +36,17 @@ if not st.session_state.username_confirmed:
 # 🔐 LOGIN SCREEN
 # ==========================================
 if 'username_confirmed' not in st.session_state or not st.session_state.username_confirmed:
-    # Try to load username from LocalStorage
-    from src.storage import load_username_from_storage, save_username_to_storage
-    
-    # Check if we have a stored username
-    if 'checked_storage' not in st.session_state:
-        st.session_state.checked_storage = True
-        # This will be handled by the component below
+    # 1. Try to auto-login from Query Params
+    if "user" in st.query_params and st.query_params["user"]:
+        st.session_state.username = st.query_params["user"]
+        st.session_state.username_confirmed = True
+        st.rerun()
     
     _, c2, _ = st.columns([1, 2, 1])
     with c2:
         st.markdown("<div style='text-align: center; font-size: 80px;'>⚖️</div>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align: center;'>Smart Court AI</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; margin-bottom: 30px;'>ระบบผู้ช่วยอัจฉริยะศาลปกครอง</p>", unsafe_allow_html=True)
-        
-        # Try to load from LocalStorage
-        stored_username = load_username_from_storage()
-        
-        if stored_username and isinstance(stored_username, str) and stored_username.strip():
-            # Auto-login with stored username
-            st.session_state.username = stored_username.strip()
-            st.session_state.username_confirmed = True
-            st.rerun()
         
         with st.container(border=True):
             st.markdown("##### 👤 กรุณาระบุชื่อผู้ใช้งาน (User Identification)")
@@ -67,8 +56,8 @@ if 'username_confirmed' not in st.session_state or not st.session_state.username
                 if name_input.strip():
                     st.session_state.username = name_input.strip()
                     st.session_state.username_confirmed = True
-                    # Save to LocalStorage
-                    save_username_to_storage(name_input.strip())
+                    # Set Query Param for persistence
+                    st.query_params["user"] = name_input.strip()
                     st.rerun()
                 else:
                     st.warning("⚠️ กรุณากรอกชื่อก่อนเริ่มใช้งาน")
@@ -110,6 +99,8 @@ else:
         if col_clr.button("🗑️ Reset", use_container_width=True):
             st.session_state.messages = []
             if 'auto_run_prompt' in st.session_state: del st.session_state['auto_run_prompt']
+            # Clear persistence
+            st.query_params.clear()
             st.rerun()
         
         # Clear Conversation Button (with confirmation)
@@ -290,8 +281,6 @@ else:
                             }
                             
                             # Debug: Check if citations exist
-                            print(f"DEBUG: Citations in response: {cite}")
-                            print(f"DEBUG: Number of citations: {len(cite) if cite else 0}")
                             
                             render_result_card(res, kb_name, show_answer=False) # Only show citations/metadata
                             

@@ -64,9 +64,7 @@ def retrieve_context(query, kb_id):
     # --- CASE 1: LOCAL RAG ---
     if kb_id == "LOCAL_KB":
         try:
-            print(f"DEBUG: Searching Local KB with query: {query}")
             results = local_kb.search(query, n_results=5)
-            print(f"DEBUG: Found {len(results)} results")
             ctx = ""
             citation_details = {}
             
@@ -74,7 +72,6 @@ def retrieve_context(query, kb_id):
                 text_chunk = r['text']
                 meta = r['metadata']
                 fname = meta.get('source', 'Unknown Document')
-                print(f"DEBUG: processing doc {fname}")
                 
                 ctx += f"- {text_chunk}\n"
                 
@@ -82,13 +79,11 @@ def retrieve_context(query, kb_id):
                     citation_details[fname] = text_chunk[:200].replace('\n', ' ') + "..."
             
             if not ctx:
-                print("DEBUG: No context found")
                 return "ไม่พบข้อมูลในฐานข้อมูลภายใน (Local Database)", {}
                 
-            print(f"DEBUG: Returning context length {len(ctx)} and {len(citation_details)} citations")
             return ctx, citation_details
         except Exception as e:
-            print(f"❌ Local KB Error: {e}")
+            st.error(f"❌ Local KB Error: {e}")
             return f"Error retrieving from Local KB: {e}", {}
             
     # --- CASE 2: AWS BEDROCK ---

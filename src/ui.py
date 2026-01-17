@@ -317,12 +317,17 @@ def render_result_card(res_data, kb_name, show_answer=True):
     
     
     # 2. Citations Section (Outside the card to allow Streamlit Widgets to function correctly)
-    print(f"DEBUG UI: res_data.get('citations') = {res_data.get('citations')}")
     if res_data.get("citations"):
-        print(f"DEBUG UI: Rendering {len(res_data['citations'])} citations")
-        st.markdown(f"<div style='margin: 10px 5px 5px 5px; font-size: 0.9rem; font-weight: 600; opacity: 0.9;'>📚 เอกสารอ้างอิง ({len(res_data['citations'])}):</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style='margin: 15px 5px 10px 5px; border-left: 3px solid #667eea; padding-left: 12px;'>
+                <span style='font-size: 0.95rem; font-weight: 600; color: {text_color}cc;'>📚 เอกสารอ้างอิง ({len(res_data['citations'])}):</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
         for fname, snippet in res_data['citations'].items():
             with st.expander(f"📄 {fname}", expanded=False):
-                st.info(f'"{snippet}"')
-    else:
-        print("DEBUG UI: No citations found in res_data")
+                st.markdown(f"""
+                <div style='background: rgba(100, 100, 150, 0.05); padding: 12px; border-radius: 8px; font-size: 0.9rem; line-height: 1.6;'>
+                    <i>"{snippet}"</i>
+                </div>
+                """, unsafe_allow_html=True)
