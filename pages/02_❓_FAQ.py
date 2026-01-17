@@ -7,6 +7,51 @@ st.set_page_config(page_title="FAQ - Smart Court AI", page_icon="❓", layout="w
 # Check session timeout
 check_session_timeout()
 
+# Force light theme for better readability
+st.markdown("""
+<style>
+    /* Force light theme */
+    .stApp {
+        background-color: #ffffff;
+        color: #1a1a1a;
+    }
+    
+    /* Sidebar light theme */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #f0f2f6;
+        color: #1a1a1a;
+        font-weight: 600;
+    }
+    
+    /* Text elements */
+    p, li, span, div {
+        color: #1a1a1a !important;
+    }
+    
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a1a1a !important;
+    }
+    
+    /* Info boxes */
+    .stAlert {
+        background-color: #e7f3ff;
+        color: #1a1a1a;
+    }
+    
+    /* Buttons */
+    .stButton button {
+        background-color: #0066cc;
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 load_custom_css()
 render_header()
 
