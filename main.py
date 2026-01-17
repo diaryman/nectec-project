@@ -111,10 +111,41 @@ else:
             st.session_state.messages = []
             if 'auto_run_prompt' in st.session_state: del st.session_state['auto_run_prompt']
             st.rerun()
+        
+        # Clear Conversation Button (with confirmation)
+        if col_save.button("🧹 Clear", use_container_width=True, help="ล้างการสนทนาทั้งหมด"):
+            if st.session_state.get("messages"):
+                st.session_state['confirm_clear'] = True
+            else:
+                st.toast("ไม่มีการสนทนาที่จะล้าง", icon="ℹ️")
+        
+        # Confirmation dialog for clear
+        if st.session_state.get('confirm_clear'):
+            st.warning("⚠️ ต้องการล้างการสนทนาทั้งหมดหรือไม่?")
+            col_yes, col_no = st.columns(2)
+            if col_yes.button("✅ ใช่", use_container_width=True, key="confirm_yes"):
+                st.session_state.messages = []
+                st.session_state['confirm_clear'] = False
+                st.toast("✅ ล้างการสนทนาเรียบร้อยแล้ว", icon="🧹")
+                st.rerun()
+            if col_no.button("❌ ไม่", use_container_width=True, key="confirm_no"):
+                st.session_state['confirm_clear'] = False
+                st.rerun()
             
         if st.session_state.get("messages"):
             chat_str = "\n".join([f"{m['role']}: {m['content']}" if m['role']=='user' else f"AI: {m['response']['answer']}" for m in st.session_state.messages])
-            col_save.download_button("📥 Save", chat_str, "log.txt", use_container_width=True)
+            st.download_button("📥 Save", chat_str, "log.txt", use_container_width=True)
+        
+        st.markdown("---")
+        
+        # System Status Indicator
+        st.markdown("### 📊 สถานะระบบ")
+        col_status, col_time = st.columns([3, 2])
+        with col_status:
+            st.success("🟢 ออนไลน์")
+        with col_time:
+            from datetime import datetime
+            st.caption(f"🕐 {datetime.now().strftime('%H:%M')}")
 
     # ==========================================
     # 💬 MAIN CHAT INTERFACE
