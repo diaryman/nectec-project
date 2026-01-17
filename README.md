@@ -43,8 +43,8 @@
 ### 1. ดาวน์โหลดโปรเจกต์
 เปิด Terminal (Mac) หรือ PowerShell (Windows) แล้วพิมพ์คำสั่ง:
 ```bash
-git clone https://github.com/nectec-project/smart-court-ai.git
-cd smart-court-ai
+git clone https://github.com/diaryman/nectec-project.git
+cd nectec-project
 ```
 
 ### 2. สร้าง Environment (แนะนำ)
