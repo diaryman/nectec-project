@@ -1,5 +1,15 @@
 import chromadb
 from chromadb.config import Settings
+# Fix for SQLite version issues in Docker/Older systems
+import sqlite3
+if sqlite3.sqlite_version_info < (3, 35, 0):
+    try:
+        __import__('pysqlite3')
+        import sys
+        sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+    except ImportError:
+        pass
+
 from sentence_transformers import SentenceTransformer
 import os
 import streamlit as st

@@ -46,9 +46,7 @@ nano .env
 AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
 
-# DeepSeek & AI (ถ้ามี)
-DEEPSEEK_API_KEY=your_deepseek_key
-DEEPSEEK_SELF_HOSTED_URL=http://3.235.65.4:11434/v1
+
 
 # Admin Settings
 ADMIN_PASSWORD=change_me_please
@@ -104,4 +102,4 @@ sudo docker compose up -d --build
 
 *   **หา Database ไม่เจอ:**
     *   ตรวจสอบว่าโฟลเดอร์ `chroma_db` และ `knowledge_docs` มีสิทธิ์การเขียนถูกต้อง (Permission)
-    *   ใช้คำสั่ง `chmod -R 777 chroma_db` หากมีปัญหาเรื่อง Permission ใน Container
+    *   **วิธีแก้:** รันคำสั่งนี้บน Server เพื่อเปิดสิทธิ์: `sudo chmod -R 777 chroma_db knowledge_docs logs`
